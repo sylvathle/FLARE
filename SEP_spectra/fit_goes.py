@@ -37,9 +37,11 @@ def getFile(year,month,day,goes="goes16"):
   strdate+=str(day)
 
   dest_filename = shortgoes+"_"+strdate+".nc"
+
   if os.path.isfile(folder+dest_filename) or folder+dest_filename in nofile_list: 
     #print (dest_filename)
     return dest_filename
+  print ("in getFile", year)
 
 
   # Case storm September 2017
@@ -72,10 +74,12 @@ def getFile(year,month,day,goes="goes16"):
   elif dateFile>datetime.date(2021,8,11): version = "v2-0-0"
 
   source_filename = "sci_sgps-l2-avg5m_"+shortgoes+"_d"+strdate+"_"+version+".nc"
-  url = "httpsdata.ngdc.noaa.gov/platforms/solar-space-observing-satellites/goes/"+goes+"/l2/data/sgps-l2-avg5m/"
+  url = "https://data.ngdc.noaa.gov/platforms/solar-space-observing-satellites/goes/"+goes+"/l2/data/sgps-l2-avg5m/"
   url+=str(year)+"/"
   if month<10: url+="0"
   url+=str(month) + "/" + source_filename
+  print (dest_filename)
+  print (url)
   try: wget.download(url,out=folder+dest_filename)
   except: 
     fnodata = open("data/Goes/nodata.txt","a")
@@ -105,6 +109,7 @@ def getGoesData(datestart,dateend,goes,tocsv="",nunit=1):
 
   df_fluxes = pd.DataFrame()
   d_fluxes = {}
+
 
   while date<dateend:
 
@@ -270,11 +275,18 @@ colors = cm.get_cmap('viridis', 13)(np.linspace(0, 1, 13))
 # Convert the colors to hexadecimal format if needed
 hex_colors = [matplotlib.colors.to_hex(color) for color in colors]
 
-url = 'https://docs.google.com/spreadsheets/d/1TIP0TXqtUwRWR6jGmsS7KNpPAvjlVwkQbvXKq0yvN88/edit?usp=drive_link'
-new_url = convert_gglsht_url(url)
-print(new_url)
+#url = 'https://docs.google.com/spreadsheets/d/1TIP0TXqtUwRWR6jGmsS7KNpPAvjlVwkQbvXKq0yvN88/edit?usp=drive_link'
+#new_url = convert_gglsht_url(url)
+#print(new_url)
 
-df_storm_dates = pd.read_csv(new_url)
+
+try:
+    with open("data/Goes/nodata.txt", "x") as f:
+        pass  # File created
+except FileExistsError:
+    pass
+
+df_storm_dates = pd.read_csv("data/Goes/SPEs_cycle-25.csv")
 
 for c in ["init_storm","end_storm","init_background","end_background"]:
   df_storm_dates[c] = pd.to_datetime(df_storm_dates[c],format='%d/%m/%Y %H:%M')
