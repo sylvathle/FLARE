@@ -86,7 +86,6 @@ for df in list_av_df_doses:
   #df = df[df["proton_N"]>1000]
   #print (df[df["eBin"]==60])
   print (df)
-  if len(df)==0: continue
   df_grouped = df.groupby(["scenario","organId","eBin"],as_index=False).sum()
   #print (df_grouped[df_grouped["eBin"]==60])
   for c in df_grouped.columns: 
@@ -104,7 +103,7 @@ list_particles = [p.split("_")[0] for p in df_dose.columns if "AD" in p]
 
 df_dose = df_dose.groupby(by=["scenario","organId","eBin"],as_index=False).apply(lambda x: pd.concat([get_stats(x,list_particles)], axis=0))
   
-df_organs = pd.read_csv("organsInfo.csv")
+df_organs = pd.read_csv("organDoses.csv")
 df_dose = df_dose.merge(df_organs[['organId', 'group', 'WT','mass[g]']], on='organId', how='left')
 
 list_q = ["_AD","_AD_b","_AD_t","_DE","_DE_b","_DE_t"]

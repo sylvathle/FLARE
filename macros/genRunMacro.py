@@ -46,7 +46,8 @@ fmacros.write("/run/initialize\n\n")
 
 fmacros.write("/SIM/scoring/putModule "+str(thicknessModule)+"\n")
 fmacros.write("/SIM/scoring/sampleSize "+str(nsim)+"\n")
-fmacros.write("/SIM/scoring/resDir "+"../results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
+#fmacros.write("/SIM/scoring/resDir "+"../results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
+fmacros.write("/SIM/scoring/resDir "+"/data/results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
 fmacros.write("/SIM/scoring/radbeam " + str(radiusSource) + " mm\n\n")
 
 fmacros.write("/run/beamOn "+str(nsim)+"\n")

@@ -1,2 +1,4 @@
 *.csv
 build
+pbsrun
+scene
