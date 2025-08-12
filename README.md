@@ -1,6 +1,6 @@
 # FLARE
 
-Code for Dose calculation of ICRP145 shielded with aluminium shell.
+Code for Fluence-to-Dose calculation of ICRP145 shielded with aluminium shell.
 
 Contact point: sylvain.blunier@gmail.com
 
