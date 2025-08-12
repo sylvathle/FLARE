@@ -94,28 +94,24 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 		auto massMap = fTetData->GetMassMap();
 	}
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
-	std::vector<G4String> particleList;
+	//std::vector<G4String> particleList;
 
-	for (G4int i=0;i<generator->GetNIons();i++) 
-	{
+	//for (G4int i=0;i<generator->GetNIons();i++) 
+	//{
 		//G4cout << i << " " << generator->GetIonName(i) << G4endl;
-		particleList.push_back(generator->GetIonName(i));
-	}
+	//	particleList.push_back(generator->GetIonName(i));
+	//}
+	G4String primaryParticle = generator->GetIonName();
 
 
 	man->CreateNtuple("Doses","Doses");
-	//man->CreateNtupleIColumn("idEvent");
 	man->CreateNtupleIColumn("organId");
 	man->CreateNtupleIColumn("eBin");
-	for (int i=0;i<particleList.size();i++)
-	{
-		//G4cout << i << " " << particleList[i] << G4endl;
-		man->CreateNtupleIColumn(particleList[i]+G4String("_N"));
-		man->CreateNtupleDColumn(particleList[i]+G4String("_DE"));
-		man->CreateNtupleDColumn(particleList[i]+G4String("_AD"));
-		//break;
-	}
+	//man->CreateNtupleIColumn(G4String("N"));
+	man->CreateNtupleDColumn(G4String("DE"));
+	man->CreateNtupleDColumn(G4String("AD"));
 	man->FinishNtuple(0);
+
 
         man->CreateNtuple("InnerFlux","InnerFlux");
         man->CreateNtupleIColumn("ikE");
@@ -123,6 +119,11 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
         man->CreateNtupleDColumn("okE");
         man->CreateNtupleDColumn("count");
         man->FinishNtuple(1);
+
+	man->CreateNtuple("N","N");
+	man->CreateNtupleIColumn("ikE");
+	man->CreateNtupleIColumn("N");
+	man->FinishNtuple(2);
 	
 	if ((phantomType=="ICRP145") || (phantomType=="BDRTOG4")) {
 		// print the progress at the interval of 10%
@@ -140,6 +141,13 @@ void MyRunAction::EndOfRunAction(const G4Run* aRun)
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	
 	auto man = G4AnalysisManager::Instance();
+
+	for (int i=0;i<100;i++)
+	{
+		man->FillNtupleIColumn(2,0,i);
+		man->FillNtupleIColumn(2,1,generator->GetNGenerated(i));
+		man->AddNtupleRow(2);
+	}
 
 	std::map<G4int, TotalFlux>::iterator itF;
 

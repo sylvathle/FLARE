@@ -103,6 +103,7 @@ void TETRun::RecordEvent(const G4Event* event)
 	G4double energyBinMax = pow(10,(energyBin+1)/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
 	G4double ebinsize = energyBinMax - energyBinMin;
 
+	Z = 1;
 	Nparts[energyBin][Z-1]++;
   	
 	auto* EDEMap = static_cast<G4THitsMap<HitInfo>*>(HCE->GetHC(EDE_id));
@@ -171,9 +172,9 @@ void TETRun::RecordEvent(const G4Event* event)
 					HT = fac*fEDEMap[energyBin][id];
 					dose = fac*fDoseMap[energyBin][id];
 					//G4cout << iter << " " << itr.first << " " << itr.second << " " << id_entry << " " << N_organ << " " << HT << G4endl;
-					man->FillNtupleIColumn(iter,3*iZ+2,Nparts[energyBin][iZ]);
-					man->FillNtupleDColumn(iter,3*iZ+3,HT);
-					man->FillNtupleDColumn(iter,3*iZ+4,dose);
+					//man->FillNtupleIColumn(iter,3*iZ+2,Nparts[energyBin][iZ]);
+					man->FillNtupleDColumn(iter,2*iZ+2,HT);
+					man->FillNtupleDColumn(iter,2*iZ+3,dose);
 					//G4cout << iter << " " << 2*(iZ+1) << " " << Nparts[energyBin][iZ] << " " << HT << " " << dose << G4endl;
 					//G4cout << itr.first << " " << wT[itr.first] << G4endl;
 					//ede += HT*wT[itr.first];

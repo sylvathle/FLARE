@@ -73,6 +73,13 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 		lowPosZ=0.0;
 		factorSphere = 1.0;//0.5*.7213;
 	}
+
+	iNbin = 100; //bins.GetNbins();
+	ilogemin = 1; //logMeV //bins.GetMinE(); //1 eV
+	ilogemax = 5; //logMeV //bins.GetMaxE(); //100 GeV
+
+	ilogemin_gen = 1; //logMeV //bins.GetMinE(); //1 eV
+	ilogemax_gen = 5; //logMeV //bins.GetMaxE(); //100 GeV
 	
 	//particleTable = G4ParticleTable::GetParticleTable();
 	ionTable = G4IonTable::GetIonTable();
@@ -90,19 +97,21 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 	yearToSecond = 24.0 * 3600.0;
 	solidAngle = 2.0*PI_; //This must be recalculated for halfsphere mode;
 
-	listIons.push_back("proton");
+	//listIons.push_back("proton");
 	//listIons.push_back("alpha");
 
-	G4int n_ions_kind = listIons.size();
+	//G4int n_ions_kind = listIons.size();
 	ions = getIons();
 	
 	//for (int i=0;i<n_ions_kind;i++) {Npart.push_back(0);} 
-	for (int i=0;i<n_ions_kind;i++) {ratioPart.push_back(G4double(1.0));} 
-	for (int i=0;i<n_ions_kind;i++) {weightToUse.push_back(G4double(1.0/n_ions_kind));} 
+	//for (int i=0;i<n_ions_kind;i++) {ratioPart.push_back(G4double(1.0));} 
+	//for (int i=0;i<n_ions_kind;i++) {weightToUse.push_back(G4double(1.0/n_ions_kind));} 
 	//for (int i=0;i<n_ions_kind;i++) {SetParticleRatio(i+1,0);} 
 	//SetParticleRatio(1,1);
 	//for (int i=0;i<n_ions_kind;i++) {G4cout << weightToUse[i] << G4endl;}
 	//weightToUse[0] = 1.0; 
+
+	for (int i=0;i<iNbin;i++) {Npart.push_back(0);}
 	
 	sampleSize = 1e5;
 	DefineCommands();
@@ -136,11 +145,11 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 	//idParticle = pickIndex(listParticleWeight);
 
 	//idParticle = 0;
-	idParticle = pickIndex(weightToUse);
+	//idParticle = pickIndex(weightToUse);
 	//while (idParticle!=0 && idParticle!=1 && idParticle!=25) idParticle = pickIndex(listParticleWeight);
 	//G4cout << idParticle << G4endl;
 	//idParticle = 0;
-	G4String particleName = listIons[idParticle];
+	//G4String particleName = listIons[idParticle];
 	
 	
 	//if (idParticle>7){G4cout << "Z = " << idParticle << " " << particleName << G4endl;}
@@ -148,7 +157,7 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 	//G4ParticleDefinition* particleDef = ionTable->GetIon(ions[particleName].getZ(),ions[particleName].getA(),0*keV);
 	//G4ParticleDefinition* particleDef = ionTable->GetIon(gcrFlux->GetZ(particleName),gcrFlux->GetA(particleName),0*keV);
 	
-	G4ParticleDefinition* particleDef = ionTable->GetIon(ions[particleName].getZ(),ions[particleName].getA(),0*keV);
+	G4ParticleDefinition* particleDef = ionTable->GetIon(ions[primaryParticle].getZ(),ions[primaryParticle].getA(),0*keV);
 	
 	//G4double energy = listEneGenerator[particleName]->GenerateOne(particleDef);
 	//energy = energy / 100.0;
@@ -167,9 +176,11 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 	
 	//energy = 0.5*GeV;
 	//G4double pow_energy = CLHEP::RandFlat::shoot(1,2.6);
-	G4double pow_energy = CLHEP::RandFlat::shoot(1,4);
+	G4double pow_energy = CLHEP::RandFlat::shoot(ilogemin_gen,ilogemax_gen);
 	G4double energy = particleDef->GetBaryonNumber()*pow(10,pow_energy)*MeV;
 	//energy = 10*MeV;	
+
+	//G4cout << particleDef->GetParticleName() << " " << energy << G4endl;
 	
 	//G4cout << idParticle << " " << particleName << " " << energy << G4endl;
 	//energy = 0.5*GeV;
@@ -181,6 +192,9 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 	//G4double momz = -posz0+CLHEP::RandFlat::shoot(-0.1,0.1)*m+0.3*m;
 
 	G4ThreeVector mom = GenMomentum(pos);
+	//G4double logprimkE = log10(energy);	
+	G4int iebin = iNbin*(pow_energy-ilogemin)/(ilogemax-ilogemin);	
+	Npart[iebin]++;
 	//pos = G4ThreeVector(1.0,0.0,0.0);
 	//mom = G4ThreeVector(momx,momy,momz);
 	//G4cout << (G4double) (nrejected)/(G4double)(nevent) << G4endl;
@@ -245,16 +259,28 @@ G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
 
 }
 
-void MyPrimaryGenerator::SetParticleRatio(G4double Z, G4double rat)
+void MyPrimaryGenerator::SetPrimary(G4String particle_)
 {
-	ratioPart[G4int(Z)-1] = rat;
+//	ratioPart[G4int(Z)-1] = rat;
+	primaryParticle = particle_;
 	
 	// Normalize
-	G4double tot = 0.;
-	for (G4int i=0;i<weightToUse.size();i++){tot+=ratioPart[i];}
-	if (tot==0) return;
-	for (G4int i=0;i<weightToUse.size();i++){weightToUse[i]=ratioPart[i]/tot;}
+	//G4double tot = 0.;
+	//for (G4int i=0;i<weightToUse.size();i++){tot+=ratioPart[i];}
+	//if (tot==0) return;
+	//for (G4int i=0;i<weightToUse.size();i++){weightToUse[i]=ratioPart[i]/tot;}
 }
+
+void MyPrimaryGenerator::SetMinkE(G4double minlogkE)
+{
+	ilogemin_gen = minlogkE;
+}
+
+void MyPrimaryGenerator::SetMaxkE(G4double maxlogkE)
+{
+	ilogemax_gen = maxlogkE;
+}
+
 
 void MyPrimaryGenerator::SetBeamRadius(G4double r)
 {
@@ -287,10 +313,20 @@ void MyPrimaryGenerator::DefineCommands()
 	radiusbeamCmd.SetParameterName("radbeam", true);
 	radiusbeamCmd.SetDefaultValue("3004*mm");
 
-	fMess = new G4GenericMessenger(this, "/SIM/generate/","Set particle ratio");
-	auto& partRatioCmd = fMess->DeclareMethod("rat",&MyPrimaryGenerator::SetParticleRatio,"Set particle ratio");
-	partRatioCmd.SetParameterName("rat", true);
-	partRatioCmd.SetDefaultValue("1 1");
+	fMess = new G4GenericMessenger(this, "/SIM/generate/","Set primary");
+	auto& partRatioCmd = fMess->DeclareMethod("particle",&MyPrimaryGenerator::SetPrimary,"Set primary");
+	partRatioCmd.SetParameterName("particle", true);
+	partRatioCmd.SetDefaultValue("H");
+
+	fMess = new G4GenericMessenger(this, "/SIM/generate/","Set sample size");
+	auto& logeminCmd = fMess->DeclareMethod("logminkE",&MyPrimaryGenerator::SetMinkE,"Set log of min kE of primary (per nucleon)");
+	logeminCmd.SetParameterName("logminkE", true);
+	logeminCmd.SetDefaultValue("1");
+
+	fMess = new G4GenericMessenger(this, "/SIM/generate/","Set sample size");
+	auto& logemaxCmd = fMess->DeclareMethod("logmaxkE",&MyPrimaryGenerator::SetMaxkE,"Set log of max kE of primary (per nucleon)");
+	logemaxCmd.SetParameterName("logmaxkE", true);
+	logeminCmd.SetDefaultValue("5");
 }
 
 

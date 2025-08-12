@@ -57,14 +57,15 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 			G4cout << "In GetMissionFactor " << beamSurface << G4endl;
 			return factorSphere*beamSurface*solidAngle;
 		}
-		G4String GetIonName(G4int i) const { return listIons[i];}
-		G4int GetNIons() const { return listIons.size();}
+		G4String GetIonName() const { return primaryParticle;}
+		//G4int GetNIons() const { return listIons.size();}
 		//std::vector<G4String> GetParticleList() const {return ionsName;}
 		//std::vector<G4double> GetGCRParticlesWeights() const {return gcrFlux->GetlistParticleWeight();}
 
 		// Return the flux for an ions Z with an arbitrary energy E
 		//G4double GetEnergyFlux(G4int Z, G4double E) const {return gcrFlux->GetEnergyFlux(Z,E);};
 		//G4int GetNGenerated(G4int Z) const {return Npart[Z-1];}
+		G4int GetNGenerated(G4int i) const {return Npart[i];}
 		
 		G4int GetSampleSize() const {return sampleSize;}
 		
@@ -87,19 +88,26 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 
 		std::map<G4String,Ion> ions;
 		G4IonTable *ionTable;
+		G4String primaryParticle;
 
 		G4int idParticle,nevent,nrejected,sampleSize;
+
+		G4int iNbin;
+		G4double ilogemin,ilogemax;
+		G4double ilogemin_gen,ilogemax_gen;
 
 		//std::vector<G4ParticleDefinition *> listParticles;
 		//std::map<G4String,SBG4SPSEneDistribution *> listEneGenerator;
 
-		std::vector<G4double> weightToUse;
-		std::vector<G4double> ratioPart;
-		std::vector<G4String> listIons;
-		//std::vector<G4int> Npart;
+		//std::vector<G4double> weightToUse;
+		//std::vector<G4double> ratioPart;
+		//std::vector<G4String> listIons;
+		std::vector<G4int> Npart;
 
 		G4ThreeVector GenMomentum(G4ThreeVector pos);
-		void SetParticleRatio(G4double,G4double);
+		void SetMinkE(G4double);
+		void SetMaxkE(G4double);
+		void SetPrimary(G4String);
 		void SetSampleSize(G4int s) {sampleSize=s;}
 		void SetBeamRadius(G4double r);
 		void DefineCommands();

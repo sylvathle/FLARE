@@ -48,8 +48,14 @@ def get_stats(group,list_particles):
 
 res_dir = "../results/ICRP145/"
 res_dir = "../results/"
-list_exp = [x[0] for x in os.walk(res_dir) if x[0].count("/")==3]
 
+#for x in os.walk(res_dir):
+#  print (x[0])
+
+list_exp = [x[0] for x in os.walk(res_dir) if (x[0].count("/")==2) & (x[0]!=res_dir)]
+
+#print (list_exp)
+#sys.exit()
 
 N_av = 5
 list_av_df_doses = [pd.DataFrame() for i in range(N_av)]
