@@ -113,17 +113,17 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 	man->FinishNtuple(0);
 
 
-        man->CreateNtuple("InnerFlux","InnerFlux");
+        /*man->CreateNtuple("InnerFlux","InnerFlux");
         man->CreateNtupleIColumn("ikE");
         man->CreateNtupleSColumn("Oparticle");
         man->CreateNtupleDColumn("okE");
         man->CreateNtupleDColumn("count");
-        man->FinishNtuple(1);
+        man->FinishNtuple(1);*/
 
 	man->CreateNtuple("N","N");
 	man->CreateNtupleIColumn("ikE");
 	man->CreateNtupleIColumn("N");
-	man->FinishNtuple(2);
+	man->FinishNtuple(1);
 	
 	if ((phantomType=="ICRP145") || (phantomType=="BDRTOG4")) {
 		// print the progress at the interval of 10%
@@ -144,12 +144,12 @@ void MyRunAction::EndOfRunAction(const G4Run* aRun)
 
 	for (int i=0;i<100;i++)
 	{
-		man->FillNtupleIColumn(2,0,i);
-		man->FillNtupleIColumn(2,1,generator->GetNGenerated(i));
-		man->AddNtupleRow(2);
+		man->FillNtupleIColumn(1,0,i);
+		man->FillNtupleIColumn(1,1,generator->GetNGenerated(i));
+		man->AddNtupleRow(1);
 	}
 
-	std::map<G4int, TotalFlux>::iterator itF;
+	/*std::map<G4int, TotalFlux>::iterator itF;
 
 	std::map<G4String,Ion> Ions = getIons();
 
@@ -182,7 +182,7 @@ void MyRunAction::EndOfRunAction(const G4Run* aRun)
                         }
                 }
 
-        }
+        }*/
 
 	man->Write();
 	man->CloseFile();
