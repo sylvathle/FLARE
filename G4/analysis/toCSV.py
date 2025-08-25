@@ -15,7 +15,7 @@ def extract_column_names(csv_file):
     	            column_names.append(line.split()[-1])  # Last word of the line contains the column names
             line_num+=1                
     return column_names
-    
+
 def get_stats(group,vars_list):
 
     dict_out = {}
@@ -23,11 +23,11 @@ def get_stats(group,vars_list):
 
     #for p in list_particles:
     if True:
-      
-      dict_out["N"] = group['N'].sum() 
-      
+
+      dict_out["N"] = group['N'].sum()
+
       for q in vars_list:
-      
+
         dict_out[q] = (group[q] * group['N']).sum() / group['N'].sum()
         low_de_group = group[group[q]<dict_out[q]]
 
@@ -39,6 +39,7 @@ def get_stats(group,vars_list):
         else: dict_out[q+"_t"] = np.sqrt((up_de_group['N'] * (up_de_group[q] - dict_out[q]) ** 2).sum() / up_de_group['N'].sum())
 
     return pd.Series(dict_out)
+    
 
 #res_dir = "../results/IcruSphere/rego30/"
 res_dir = "/data/results/"
