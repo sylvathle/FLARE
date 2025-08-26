@@ -189,65 +189,81 @@ def generateSPEDoses():
           #print (df_f2d)
      #sys.exit()
     
-def generateSPE_time_doses(datemin,datemax,scenario,thick,organ):
+def generateSPE_time_doses():
 
+  thick = 185
+  d_increment  = 183
 
   dose = di.DoseInfo(True)
-  print (dose.list_organs)
   sepem = sp.Sepem()
 
-  df_f2d = dose.getFlux2DoseCoeffs(scenario,thick,organ)
-  df_f2d = df_f2d[df_f2d["particle"]=="H"]
+  
+  for scenario in dose.list_scenario:
+    for organ in ["all"]+dose.list_organs:
+      datemin = dt.datetime(1974,7,1,0,0,0,0)
+      while datemin<dt.datetime(2018,1,1,0,0,0,0):
+        datemax = datemin + dt.timedelta(days=d_increment)
+        filename = scenario+"_"+organ.replace(" ","-")+"_"+datemin.strftime("%Y%m%d")+"-"+datemax.strftime("%Y%m%d")+".csv"
+        filepath = "output/SPE/tserie/"+filename
+        if os.path.exists(filepath): 
+          datemin = datemax
+          continue
+        with open(filepath, 'a'): os.utime(filepath, None)
+        df_f2d = dose.getFlux2DoseCoeffs(scenario,thick,organ)
+        df_f2d = df_f2d[df_f2d["particle"]=="H"]
 
-  list_sample = df_f2d["i_sample"].unique().tolist()
-  df_spe = sepem.getSpectrum(datemin,datemax,dose.listEp1)
+        list_sample = df_f2d["i_sample"].unique().tolist()
+        df_spe = sepem.getSpectrum(datemin,datemax,dose.listEp1)
 
-  dict_time_vals = {"date":[],"AD":[],"AD_b":[],"AD_t":[],"DE":[],"DE_b":[],"DE_t":[],"EDE":[],"EDE_b":[],"EDE_t":[]}
+        dict_time_vals = {"date":[],"AD":[],"AD_b":[],"AD_t":[],"DE":[],"DE_b":[],"DE_t":[]}
+        if organ=="all":
+          dict_time_vals["EDE"]=[]
+          dict_time_vals["EDE_t"]=[]
+          dict_time_vals["EDE_b"]=[]
 
-  acc = 0
-  for storm in df_spe.columns:
-    list_AD = [0 for i in list_sample]
-    list_DE = [0 for i in list_sample]
-    list_EDE = [0 for i in list_sample]
-    for i_sample in list_sample:
-      df_dose_sample = df_f2d[df_f2d["i_sample"]==i_sample]
-      #print (df_dose_sample["EDE"])
-      #print (df_spe[storm])
-      #print (df_dose_sample["EDE"]*df_spe[storm])
+        for storm in df_spe.columns:
+          list_AD = [0 for i in list_sample]
+          list_DE = [0 for i in list_sample]
+          list_EDE = [0 for i in list_sample]
+          for i_sample in list_sample:
+            df_dose_sample = df_f2d[df_f2d["i_sample"]==i_sample]
 
-      # [mSv cm2 / p ] * [p . cm-2 . min-1] = mSv / min
-      list_AD[i_sample] += (df_dose_sample["AD"]*df_spe[storm]).sum() # each data point is for 5 minutes
-      list_DE[i_sample] += (df_dose_sample["DE"]*df_spe[storm]).sum() # each data point is for 5 minutes
-      if organ=="all": list_EDE[i_sample] += (df_dose_sample["EDE"]*df_spe[storm]).sum() # each data point is for 5 minutes
+            # [mSv cm2 / p ] * [p . cm-2 . min-1] = mSv / min
+            list_AD[i_sample] += (df_dose_sample["AD"]*df_spe[storm]).sum() # each data point is for 5 minutes
+            list_DE[i_sample] += (df_dose_sample["DE"]*df_spe[storm]).sum() # each data point is for 5 minutes
+            if organ=="all": list_EDE[i_sample] += (df_dose_sample["EDE"]*df_spe[storm]).sum() # each data point is for 5 minutes
 
-    date = dt.datetime.strptime(storm,"%Y%m%d-%H%M")
-    dict_time_vals["date"].append(date)
+          date = dt.datetime.strptime(storm,"%Y%m%d-%H%M")
+          dict_time_vals["date"].append(date)
 
-    ad,ad_b,ad_t = calc_stats(list_AD)
-    dict_time_vals["AD"].append(ad)
-    dict_time_vals["AD_b"].append(ad_b)
-    dict_time_vals["AD_t"].append(ad_t)
+          ad,ad_b,ad_t = calc_stats(list_AD)
+          dict_time_vals["AD"].append(ad)
+          dict_time_vals["AD_b"].append(ad_b)
+          dict_time_vals["AD_t"].append(ad_t)
 
-    de,de_b,de_t = calc_stats(list_DE)
-    dict_time_vals["DE"].append(de)
-    dict_time_vals["DE_b"].append(de_b)
-    dict_time_vals["DE_t"].append(de_t)
+          de,de_b,de_t = calc_stats(list_DE)
+          dict_time_vals["DE"].append(de)
+          dict_time_vals["DE_b"].append(de_b)
+          dict_time_vals["DE_t"].append(de_t)
 
-    if organ=="all":
-      ede,ede_b,ede_t = calc_stats(list_EDE)
-      dict_time_vals["EDE"].append(ede)
-      dict_time_vals["EDE_b"].append(ede_b)
-      dict_time_vals["EDE_t"].append(ede_t)
+          if organ=="all":
+            ede,ede_b,ede_t = calc_stats(list_EDE)
+            dict_time_vals["EDE"].append(ede)
+            dict_time_vals["EDE_b"].append(ede_b)
+            dict_time_vals["EDE_t"].append(ede_t)
     
-  df_time_vals = pd.DataFrame(dict_time_vals)
-  #print (df_time_vals[qqty])
-  print (df_time_vals["EDE"].sum())
+        df_time_vals = pd.DataFrame(dict_time_vals)
 
-  if len(df_time_vals)!=0:
-    if not os.path.exists("output"): os.makedirs("output")
-    if not os.path.exists("output/SPE"): os.makedirs("output/SPE")
-    if not os.path.exists("output/SPE/tserie"): os.makedirs("output/SPE/tserie")
-    df_time_vals.to_csv("output/SPE/tserie/"+scenario+"_"+organ+"_"+datemin.strftime("%Y%m%s")+"-"+datemax.strftime("%Y%m%s")+"_tserie.csv",index=False)
+        if len(df_time_vals)!=0:
+          if not os.path.exists("output"): os.makedirs("output")
+          if not os.path.exists("output/SPE"): os.makedirs("output/SPE")
+          if not os.path.exists("output/SPE/tserie"): os.makedirs("output/SPE/tserie")
+          df_time_vals.to_csv("output/SPE/tserie/"+filename,index=False)
+        datemin = datemax
+  #return
+  print ("All file created")
+
+
      
      
 
@@ -255,17 +271,14 @@ datemin = dt.datetime(1989,7,1,0,0,0,0)
 datemax = dt.datetime(1990,1,1,0,0,0,0)
 
 thick = 185
-organ = sys.argv[1]
-datemin = dt.datetime.strptime(sys.argv[2],"%Y%m%d")
-datemax = dt.datetime.strptime(sys.argv[3],"%Y%m%d")
+#organ = sys.argv[1]
+#datemin = dt.datetime.strptime(sys.argv[2],"%Y%m%d")
+#datemax = dt.datetime.strptime(sys.argv[3],"%Y%m%d")
 
-list_scenario = ["B2G-naked","B2G-vest"]
 
 t1 = time.time()
 
-for scenario in list_scenario:
-  df_spe = generateSPE_time_doses(datemin,datemax,scenario,thick,organ)
-  #df_spe.to_csv("output/SPE/tserie/"+scenario+"_"+organ+"_"+datemin.strftime("%Y%m%s-%H%M")+"-"+datemax.strftime("%Y%m%s-%H%M")+"_tserie.csv",index=False)
+df_spe = generateSPE_time_doses()
 
 print ("time to run:",time.time()-t1)
 

@@ -94,11 +94,11 @@ class DoseInfo:
     self.df_dat["organId"] = self.df_dat["organId"].astype(int)
     self.df_dat = self.df_dat[self.df_dat["organId"]<15000]
 
-    list_scenario = self.df_dat["scenario"].unique().tolist()
+    self.list_scenario = self.df_dat["scenario"].unique().tolist()
 
     self.df_dat_merged = pd.DataFrame()
 
-    for scenario in list_scenario:
+    for scenario in self.list_scenario:
       df_scenario = self.df_dat[(self.df_dat["scenario"]==scenario)]
       if "ICRP" in scenario: df_scenario = df_scenario.merge(self.df_organs_ICRP[['organId', 'group', 'WT','mass[g]']], on='organId', how='left')
       elif "B2G" in scenario: df_scenario = df_scenario.merge(self.df_organs_b2g[['organId', 'group', 'WT','mass[g]']], on='organId', how='left')
