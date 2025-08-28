@@ -4,3 +4,5 @@ output/
 pbs_run.sh
 run.err
 run.out
+run.sh
+*.log
