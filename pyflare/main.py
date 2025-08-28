@@ -38,67 +38,84 @@ def generateGCRDoses(datemin,datemax):
 
   if not os.path.exists("output"): os.makedirs("output")
   if not os.path.exists("output/GCR"): os.makedirs("output/GCR")
+  if not os.path.exists("output/GCR/tserie"): os.makedirs("output/GCR/tserie")
 
   thick = 185
+  d_increment = 183
 
-  gcr_path = 'input/GCR-spectra'
+  gcr_input_path = 'input/GCR-spectra/'
+  gcr_output_path = 'output/GCR/tserie/'
 
   list_qqty = ["AD","DE","EDE"]
   list_stat = ["","_b","_t"]
 
   for scenario in dose.list_scenario:
+    if "ICRP" in scenario: continue
 
-    if "B2G" not in scenario: continue
-    dict_spe_doses = {"date":[],"organ":[]}
+    datemin = dt.datetime(1974,1,1,0,0,0,0)
+    while datemin<dt.datetime(2025,8,1,0,0,0,0):
+    #while datemin<dt.datetime(1974,7,13,0,0,0,0):
+      datemax = datemin + dt.timedelta(days=d_increment)
+      csv_filename = scenario+"_"+datemin.strftime("%Y%m%d")+"-"+datemax.strftime("%Y%m%d")+".csv"
+      filepath = gcr_output_path+csv_filename
 
-    for qqty in list_qqty:
-      for stat in list_stat:
-        dict_gcr_doses[qqty+stat] = []
+      if os.path.exists(filepath): 
+        datemin = datemax
+        continue
+      with open(filepath, 'a'): os.utime(filepath, None)
 
-    for filename in os.listdir(gcr_path):
-      #print(filename)
-      # Extract date from filename (assuming format "gcr_%Y-%m-%d.csv")
-      gcr_path_file = gcr_path+"/"+filename
-      try:
-        date_str = filename.replace("gcr_", "").replace(".csv", "")
-        date = dt.datetime.strptime(date_str, "%Y-%m-%d")
-        #print(f"  Extracted date: {date}")
+      if "B2G" not in scenario: continue
+      dict_gcr_doses = {"date":[],"organ":[]}
 
-      except ValueError:
-        print(f"  Could not parse date from filename: {filename}")
-      if date < datemin: continue
-      if date > datemax: continue
+      for qqty in list_qqty:
+        for stat in list_stat:
+          dict_gcr_doses[qqty+stat] = []
 
-      df_gcr = gcr.getGCRFlux(gcr_path_file, dose.listE, dose.listdeltaE ,0)
+      for filename in os.listdir(gcr_input_path):
+        #print(filename)
+        # Extract date from filename (assuming format "gcr_%Y-%m-%d.csv")
+        gcr_path_file = gcr_input_path+"/"+filename
+        try:
+          date_str = filename.replace("gcr_", "").replace(".csv", "")
+          date = dt.datetime.strptime(date_str, "%Y-%m-%d")
+          #print(f"  Extracted date: {date}")
 
-      for organ in dose.list_organs + ["all"]:
-        print (scenario,date,organ)
+        except ValueError:
+          print(f"  Could not parse date from filename: {filename}")
+        if date < datemin: continue
+        if date > datemax: continue
 
-        dict_gcr_doses["date"].append(date)
-        dict_gcr_doses["organ"].append(organ)
+        df_gcr = gcr.getGCRFlux(gcr_path_file, dose.listE, dose.listdeltaE ,0)
 
-        df_f2d = dose.getFlux2DoseCoeffs(scenario,thick,organ)
-        ad,ad_b,ad_t,de,de_b,de_t,ede,ede_b,ede_t = gcr.gcrDose(df_gcr,df_f2d)
-        dict_gcr_doses["AD"].append(ad)
-        dict_gcr_doses["AD_b"].append(ad_b)
-        dict_gcr_doses["AD_t"].append(ad_t)
-        dict_gcr_doses["DE"].append(de)
-        dict_gcr_doses["DE_b"].append(de_b)
-        dict_gcr_doses["DE_t"].append(de_t)
-        dict_gcr_doses["EDE"].append(ede)
-        dict_gcr_doses["EDE_b"].append(ede_b)
-        dict_gcr_doses["EDE_t"].append(ede_t)
+        for organ in dose.list_organs + ["all"]:
+          #print (scenario,date,organ)
 
-    df_gcr_doses = pd.DataFrame(dict_gcr_doses)
-    df_gcr_doses.set_index("date",inplace=True)
-    #for col in df_gcr_doses.columns:
-    for qqty in list_qqty:
-      for stat in list_stat:
-        col = qqty+stat
-        df_gcr_doses[col] = round(df_gcr_doses[col]/365/1.3,5) #/(24*60)*1000
-    df_gcr_doses.sort_index(inplace=True)
+          dict_gcr_doses["date"].append(date)
+          dict_gcr_doses["organ"].append(organ)
 
-    df_gcr_doses.to_csv("output/GCR/"+scenario+"_"+str(thick)+".csv")
+          df_f2d = dose.getFlux2DoseCoeffs(scenario,thick,organ)
+          ad,ad_b,ad_t,de,de_b,de_t,ede,ede_b,ede_t = gcr.gcrDose(df_gcr,df_f2d)
+          dict_gcr_doses["AD"].append(ad)
+          dict_gcr_doses["AD_b"].append(ad_b)
+          dict_gcr_doses["AD_t"].append(ad_t)
+          dict_gcr_doses["DE"].append(de)
+          dict_gcr_doses["DE_b"].append(de_b)
+          dict_gcr_doses["DE_t"].append(de_t)
+          dict_gcr_doses["EDE"].append(ede)
+          dict_gcr_doses["EDE_b"].append(ede_b)
+          dict_gcr_doses["EDE_t"].append(ede_t)
+
+      df_gcr_doses = pd.DataFrame(dict_gcr_doses)
+      df_gcr_doses.set_index("date",inplace=True)
+      #for col in df_gcr_doses.columns:
+      #for qqty in list_qqty:
+      #  for stat in list_stat:
+      #    col = qqty+stat
+      #    df_gcr_doses[col] = round(df_gcr_doses[col],5) #/(24*60)*1000
+      df_gcr_doses.sort_index(inplace=True)
+
+      df_gcr_doses.to_csv(filepath)
+      datemin = datemax
 
 def generateSPEDoses(): 
 
@@ -268,7 +285,7 @@ def generateSPE_time_doses():
      
 
 datemin = dt.datetime(1989,7,1,0,0,0,0)
-datemax = dt.datetime(1990,1,1,0,0,0,0)
+datemax = dt.datetime(1989,8,1,0,0,0,0)
 
 thick = 185
 #organ = sys.argv[1]
@@ -278,7 +295,8 @@ thick = 185
 
 t1 = time.time()
 
-df_spe = generateSPE_time_doses()
+#df_spe = generateSPE_time_doses()
+generateGCRDoses(datemin,datemax)
 
 print ("time to run:",time.time()-t1)
 
@@ -293,4 +311,3 @@ print ("time to run:",time.time()-t1)
 #datemin = dt.datetime.strptime(sys.argv[1],"%Y%m%d")
 #datemax = dt.datetime.strptime(sys.argv[2],"%Y%m%d")
 
-#generateGCRDoses(datemin,datemax)

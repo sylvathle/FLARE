@@ -26,7 +26,7 @@ def getGCRFlux(gcr_path,listE,listdeltaE,E_cutoff=0):
   df_gcr.set_index("Energy (MeV/n)",inplace=True)
   for particle in df_gcr.columns:
     # Convert to 1 day of GCR / m2
-    df_gcr[particle] = df_gcr[particle]*24*60*60*365 # Now in #proton / [MeV m2 year sr]
+    df_gcr[particle] = df_gcr[particle]*60 # Now in #proton / [MeV m2 min sr]
 
 
   df_gcr = df_gcr[df_gcr.index>1]
@@ -47,7 +47,7 @@ def getGCRFlux(gcr_path,listE,listdeltaE,E_cutoff=0):
   df_gcr_resampled.set_index("E",inplace=True)
 
   for particle in df_gcr.columns:
-    df_gcr_resampled[particle] = df_gcr_resampled[particle]*df_gcr_resampled["deltaE"]*2*np.pi/1e4
+    df_gcr_resampled[particle] = df_gcr_resampled[particle]*df_gcr_resampled["deltaE"]*4*np.pi/1e4 # #proton/[cm2.min]
 
   for particle in df_gcr_resampled.columns:
     for e in df_gcr_resampled.index:
