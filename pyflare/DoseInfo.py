@@ -150,7 +150,7 @@ class DoseInfo:
 
     self.body_mass = self.df_organs_ICRP["mass[g]"].sum()
 
-    pd.options.mode.copy_on_write = True
+    #pd.options.mode.copy_on_write = True
     self.list_organs = self.df_organ_grouped["group"].unique().tolist()
 
     self.df_organ_grouped[["i_sample","scenario","thick","particle","group","E","DE","AD"]].to_csv("input/df_organ_grouped.csv",index=False)

@@ -63,4 +63,5 @@ def concat_gcr_tserie():
     #    df[qqty+stat] *= 1.3/24/60
     df.to_csv("output/GCR/final_tserie/"+k+".csv",index=False)
 
+concat_spe_tserie()
 concat_gcr_tserie()
