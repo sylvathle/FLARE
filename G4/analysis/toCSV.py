@@ -62,10 +62,14 @@ for scenario in listdir(res_dir):
   list_sum_df_N = [pd.DataFrame() for i in range(N_av)]
 
   for iprefix, f in enumerate(list_prefix):
-    cols_dose = extract_column_names(f+"Doses.csv")
-    df_dose = pd.read_csv(f+"Doses.csv",names=cols_dose,skiprows=len(cols_dose)+4)
-    cols_N = extract_column_names(f+"N.csv") 
-    df_N = pd.read_csv(f+"N.csv",names=cols_N,skiprows=len(cols_N)+4)
+    try: 
+      cols_dose = extract_column_names(f+"Doses.csv")
+      df_dose = pd.read_csv(f+"Doses.csv",names=cols_dose,skiprows=len(cols_dose)+4)
+    except: continue
+    try: 
+      cols_N = extract_column_names(f+"N.csv") 
+      df_N = pd.read_csv(f+"N.csv",names=cols_N,skiprows=len(cols_N)+4)
+    except: continue
 
     if len(df_dose)==0 or len(df_N)==0: continue
   
