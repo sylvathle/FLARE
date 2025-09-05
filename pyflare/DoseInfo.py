@@ -114,7 +114,7 @@ class DoseInfo:
       
         # Important line correcting the m2 unit for the sphere of generation of protons to cm2
         # It also cancel the angular distribution as it is already multiplied in the band fitted fluxes
-        self.df_dat[c] *= 1e4/(4*np.pi)
+        self.df_dat[c] *= 1e4/(2*np.pi)/4.0
         # Correct multiplication done in simulations by energy bin size, not needed
         self.df_dat[c] /= self.df_dat["deltaE"] # cm2.mSv/proton
       if "_N" in c:

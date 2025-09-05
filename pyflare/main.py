@@ -41,7 +41,7 @@ def generateGCRDoses(datemin,datemax):
   if not os.path.exists("output/GCR/tserie"): os.makedirs("output/GCR/tserie")
 
   thick = 185
-  d_increment = 183
+  d_increment = 32
 
   gcr_input_path = 'input/GCR-spectra/'
   gcr_output_path = 'output/GCR/tserie/'
@@ -50,11 +50,14 @@ def generateGCRDoses(datemin,datemax):
   list_stat = ["","_b","_t"]
 
   for scenario in dose.list_scenario:
-    if "ICRP" in scenario: continue
+    #if "ICRP" in scenario: continue
 
-    datemin = dt.datetime(1974,1,1,0,0,0,0)
-    while datemin<dt.datetime(2025,8,1,0,0,0,0):
+    #datemin = dt.datetime(1974,1,1,0,0,0,0)
+    datemin = dt.datetime(2021,11,1,0,0,0,0)
+    #while datemin<dt.datetime(2025,8,1,0,0,0,0):
+    while datemin<dt.datetime(2021,12,1,0,0,0,0):
     #while datemin<dt.datetime(1974,7,13,0,0,0,0):
+      print (datemin)
       datemax = datemin + dt.timedelta(days=d_increment)
       csv_filename = scenario+"_"+datemin.strftime("%Y%m%d")+"-"+datemax.strftime("%Y%m%d")+".csv"
       filepath = gcr_output_path+csv_filename
@@ -87,7 +90,9 @@ def generateGCRDoses(datemin,datemax):
 
         df_gcr = gcr.getGCRFlux(gcr_path_file, dose.listE, dose.listdeltaE ,0)
 
-        for organ in dose.list_organs + ["all"]:
+        #for organ in dose.list_organs + ["all"]:
+        #for organ in ["all"]:
+        for organ in ["gonad"]:
           #print (scenario,date,organ)
 
           dict_gcr_doses["date"].append(date)
@@ -104,6 +109,7 @@ def generateGCRDoses(datemin,datemax):
           dict_gcr_doses["EDE"].append(ede)
           dict_gcr_doses["EDE_b"].append(ede_b)
           dict_gcr_doses["EDE_t"].append(ede_t)
+          print (scenario,date,organ,ad)
 
       df_gcr_doses = pd.DataFrame(dict_gcr_doses)
       df_gcr_doses.set_index("date",inplace=True)
@@ -115,6 +121,9 @@ def generateGCRDoses(datemin,datemax):
       df_gcr_doses.sort_index(inplace=True)
 
       df_gcr_doses.to_csv(filepath)
+      print (scenario) 
+      print (datemin) 
+      print (df_gcr_doses)
       datemin = datemax
 
 def generateSPEDoses(): 

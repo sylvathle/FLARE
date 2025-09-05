@@ -26,7 +26,7 @@ def getGCRFlux(gcr_path,listE,listdeltaE,E_cutoff=0):
   df_gcr.set_index("Energy (MeV/n)",inplace=True)
   for particle in df_gcr.columns:
     # Convert to 1 day of GCR / m2
-    df_gcr[particle] = df_gcr[particle]*60 # Now in #proton / [MeV m2 min sr]
+    df_gcr[particle] = df_gcr[particle]*60 # Now in #particle / [(MeV/n) m2 min sr]
 
 
   df_gcr = df_gcr[df_gcr.index>1]
@@ -36,7 +36,18 @@ def getGCRFlux(gcr_path,listE,listdeltaE,E_cutoff=0):
   for particle in df_gcr.columns:
     # Create an interpolation function for the dose values
     f2d_interp = interp1d(df_gcr.index, df_gcr[particle], kind='linear', fill_value="extrapolate")
+    
+    #f_down = f2d_interp(listE[0])
+
+    #for ie,de in enumerate(listdeltaE):
+    #  ep = listE[ie]+de
+    #  f_up = f2d_interp(ep)
+    #  flux_ebin.append(f_)
+    #  e_up =  
+    
     flux_ebin = f2d_interp(listE)
+       
+
     for i in range(len(listE)):
       if flux_ebin[i]<0:
         flux_ebin[i] = np.nan
@@ -47,7 +58,18 @@ def getGCRFlux(gcr_path,listE,listdeltaE,E_cutoff=0):
   df_gcr_resampled.set_index("E",inplace=True)
 
   for particle in df_gcr.columns:
-    df_gcr_resampled[particle] = df_gcr_resampled[particle]*df_gcr_resampled["deltaE"]*4*np.pi/1e4 # #proton/[cm2.min]
+    gcr_part = df_gcr_resampled[particle].tolist()
+    int_gcr_part = []
+    for iE,dE in enumerate(listdeltaE[:-1]):
+       int_gcr_part.append((gcr_part[iE]+gcr_part[iE+1])/2.0*dE)
+    # Adding last point
+    a = max(gcr_part[-2:])
+    b = min(gcr_part[-2:])
+    int_gcr_part.append((3*b-a)/2.0*listdeltaE[-1])
+    df_gcr_resampled[particle] = int_gcr_part # #particle / [m2.min.sr]
+    # integration over solid angle
+    df_gcr_resampled[particle] *= 4*np.pi/1e4 # #particle / [cm2.min]
+    #df_gcr_resampled[particle] = df_gcr_resampled[particle]*df_gcr_resampled["deltaE"]*4*np.pi/1e4 # #proton/[cm2.min]
 
   for particle in df_gcr_resampled.columns:
     for e in df_gcr_resampled.index:
@@ -71,6 +93,7 @@ def gcrDose(df_gcr,df_coeffs):
     df_coeff_particle = df_coeff_particle.merge(df_gcr,left_index=True, right_index=True, how="outer")
     for isample in list_sample:
       df_coeff_sample = df_coeff_particle[df_coeff_particle["i_sample"]==isample]
+      ## p / [cm2.min] * cm2.mSv/p
       list_vals_AD[isample] += float((df_gcr[particle]*df_coeff_sample["AD"]).sum())
       list_vals_DE[isample] += float((df_gcr[particle]*df_coeff_sample["DE"]).sum())
       if "EDE" in df_coeff_sample.columns: list_vals_EDE[isample] += float((df_gcr[particle]*df_coeff_sample["EDE"]).sum())
