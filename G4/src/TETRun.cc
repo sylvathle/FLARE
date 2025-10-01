@@ -143,9 +143,9 @@ void TETRun::RecordEvent(const G4Event* event)
 
 		for (auto imap : fEDEMap) {
 			energyBin = imap.first;
-			energyBinMin = pow(10,energyBin/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
-			energyBinMax = pow(10,(energyBin+1)/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
-			ebinsize = energyBinMax - energyBinMin;
+			//energyBinMin = pow(10,energyBin/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
+			//energyBinMax = pow(10,(energyBin+1)/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
+			//ebinsize = energyBinMax - energyBinMin;
 			for (auto itr : massMap) {
 				//G4String nameEntry = G4String(std::to_string(itr.first)+G4String("_")+G4String(particleName));
 				//G4cout << id_entry << " " << itr.first << G4endl;
@@ -155,7 +155,7 @@ void TETRun::RecordEvent(const G4Event* event)
 				man->FillNtupleIColumn(iter,1,energyBin);
 				//G4cout << "mission_factor " << mission_factor << G4endl;
 				//G4cout << itr.first << " Mass " << massMap[itr.first] << G4endl;
-				fac = mission_factor/massMap[itr.first]*1e3*ebinsize; //mission_factor (m2.sr) / massMap (kg) / N  ->>> mGy.m2.sr/MeV / particle
+				fac = mission_factor/massMap[itr.first]*1e3; //mission_factor (m2.sr) / massMap (kg) / N  ->>> mGy.m2.sr / particle
 				for (G4int iZ=0;iZ<=1;iZ++)
 				{
 					id = itr.first+(iZ+1)*100000;

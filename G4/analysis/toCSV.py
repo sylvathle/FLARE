@@ -56,6 +56,7 @@ for scenario in listdir(res_dir):
   scenario_dir = res_dir + scenario + "/"
 
   list_prefix = [scenario_dir+f.split("_")[0]+"_nt_" for f in listdir(scenario_dir) if isfile(join(scenario_dir, f)) and "Dose" in f]
+  print (list_prefix)
 
   N_av = 5
   list_av_df_doses = [pd.DataFrame() for i in range(N_av)]
@@ -104,6 +105,7 @@ for scenario in listdir(res_dir):
   df_all_dose = pd.concat([df_all_dose,df_dose_av])
 
 df_all_dose_sample.reset_index(inplace=True)
+print (df_all_dose_sample)
 df_all_dose_sample[['scenario', 'thick', 'particle']] = df_all_dose_sample['scenario'].str.split('_', expand=True)
 df_all_dose_sample = df_all_dose_sample[["scenario", "thick", "particle", "organId","i_sample","eBin","N","DE","AD"]]
 df_all_dose_sample.to_csv("doses_samples_v2.csv",index=False)

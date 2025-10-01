@@ -95,7 +95,7 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 	
 	biasRndm = new G4SPSRandomGenerator();
 	yearToSecond = 24.0 * 3600.0;
-	solidAngle = 2.0*PI_; //This must be recalculated for halfsphere mode;
+	solidAngle = PI_;
 
 	//listIons.push_back("proton");
 	//listIons.push_back("alpha");
@@ -214,6 +214,7 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 
 
 
+// Function generating a cosine distribution from the source point
 G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
 {
 	// Normalize pos
@@ -221,44 +222,63 @@ G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
 	G4double normposx = pos[0]/normpos;
 	G4double normposy = pos[1]/normpos;
 	G4double normposz = pos[2]/normpos;
+	//G4cout << normposx << " " << normposy << " " << normposz << G4endl;
 
-	//Calculate vparallel
-	G4double sizevpar = -sqrt(1-CLHEP::RandFlat::shoot(0.0,1.0));
-	//G4double sizevpar = -sqrt(1-CLHEP::RandFlat::shoot(0.0,0.0)); // A bit of angle
-	//sizevpar = -1.0; //Completely perpendicular from the surface
-	G4double xpar = normposx * sizevpar;
-	G4double ypar = normposy * sizevpar;
-	G4double zpar = normposz * sizevpar;
+	G4double u = CLHEP::RandFlat::shoot(0.0,1.0);
+	G4double v = CLHEP::RandFlat::shoot(0.0,1.0);
 
+	//G4cout << "u = " << u << "  v=" << v << G4endl;
+
+	// theta and phi in spherical coordinates
+	G4double theta = asin(u);
+	G4double phi = 2 * PI_ * v;
+
+	//G4cout << theta << " " << phi << G4endl;
+
+	// generated vector along the z axis
+	G4double x = sin(theta)*cos(phi);
+	G4double y = sin(theta)*sin(phi);
+	G4double z = cos(theta);
+
+	// Calculate vparallel
+	G4double xpar = normposy;
+	G4double ypar = -normposx;
+	G4double zpar = 0.0;
+	G4double normpar = sqrt(xpar*xpar + ypar*ypar + zpar*zpar);
+	if (normpar==0)
+	{
+		xpar = -normposz;
+		ypar = 0;
+		zpar = normposx;
+	}
+	normpar = sqrt(xpar*xpar + ypar*ypar + zpar*zpar);
+	xpar = xpar/normpar;
+	ypar = ypar/normpar;
+	zpar = zpar/normpar;
+
+	// Calculate vperp
+	G4double xper = normposy*zpar - normposz*ypar;
+	G4double yper = normposz*xpar - normposx*zpar;
+	G4double zper = normposx*ypar - normposy*xpar;
 	
-	// Calculate vperpendicular
-	// First we need a base in the perpendicular plane
-	// First base
-	G4double normb1 = sqrt(zpar*zpar+xpar*xpar);
-	G4double b1x = zpar/normb1;
-	G4double b1y = 0.0;
-	G4double b1z = -xpar/normb1;
+	G4double normper = sqrt(xper*xper + yper*yper + zper*zper);
+	xper = xper/normper;
+	yper = yper/normper;
+	zper = zper/normper;
 
-	//Second base
-	G4double b2x = normposy*b1z - normposz*b1y;
-	G4double b2y = normposz*b1x - normposx*b1z;
-	G4double b2z = normposx*b1y - normposy*b1x;
-
+	//New vector
+	G4double xrot = x * xpar + y * xper + z * normposx;
+	G4double yrot = x * ypar + y * yper + z * normposy;
+	G4double zrot = x * zpar + y * zper + z * normposz;
+	G4double normrot = sqrt(xrot*xrot + yrot*yrot + zrot*zrot);
+	xrot = -xrot/normrot;
+	yrot = -yrot/normrot;
+	zrot = -zrot/normrot;
 	
-	G4double sizevperp = sqrt(1.0 - sizevpar*sizevpar);	
-
-
-	//G4cout << sizevpar << " " << sizevperp << " " << b1x << " " << b2x << G4endl; 
-	G4double theta = CLHEP::RandFlat::shoot(-PI_,PI_);
-	//theta = 0;
-	G4double mx0rot = sizevperp * (b1x * cos(theta) + b2x * sin(theta)) + xpar;
-	G4double my0rot = sizevperp * (b1y * cos(theta) + b2y * sin(theta)) + ypar;
-	G4double mz0rot = sizevperp * (b1z * cos(theta) + b2z * sin(theta)) + zpar;
-
-	return G4ThreeVector(mx0rot,my0rot,mz0rot);
-
+	return G4ThreeVector(xrot,yrot,zrot);
 }
 
+	
 void MyPrimaryGenerator::SetPrimary(G4String particle_)
 {
 //	ratioPart[G4int(Z)-1] = rat;

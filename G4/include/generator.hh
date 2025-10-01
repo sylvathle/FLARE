@@ -55,7 +55,7 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		G4double GetMissionFactor() const 
 		{
 			G4cout << "In GetMissionFactor " << beamSurface << G4endl;
-			return factorSphere*beamSurface*solidAngle;
+			return factorSphere*beamSurface;
 		}
 		G4String GetIonName() const { return primaryParticle;}
 		//G4int GetNIons() const { return listIons.size();}
