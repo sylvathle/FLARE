@@ -307,6 +307,9 @@ def getDoses(datemin,datemax,qqty="DE"):
     df_spe_naked = df_spe_naked[(df_spe_naked['date']>=datemin) & (df_spe_naked['date']<=datemax)] 
     df_spe_naked.set_index('date',inplace=True)
     df_spe_naked = df_spe_naked.drop_duplicates()
+    df_spe_naked = df_spe_naked.dropna()
+    print (df)
+    print (df_spe_naked)
     for stat in list_stat: df["SPE_naked_"+str_organ+stat] = df_spe_naked[qqty+stat]
   
     file_path = 'output/SPE/final_tserie/B2G-vest_'+str_organ+'.csv'
@@ -348,8 +351,8 @@ def getDoses(datemin,datemax,qqty="DE"):
      
 #datemin = dt.datetime(1989,7,1,0,0,0,0)
 #datemax = dt.datetime(1989,8,1,0,0,0,0)
-#generateSPE_time_doses()
-#generateGCRDoses()
+generateSPE_time_doses()
+generateGCRDoses()
 
 #sys.exit()
 
@@ -361,16 +364,17 @@ thick = 185
 
 t1 = time.time()
 
-df_rel = pd.read_csv("input/SEPEM_RDS_v3/SEPEM_REL_v2/RELv2.csv")
-df_rel["start"] = pd.to_datetime(df_rel["start date"])
-df_rel["end"] = pd.to_datetime(df_rel["end date"])
-df_rel = df_rel[["start","end"]]
+if True:
+  df_rel = pd.read_csv("input/SEPEM_RDS_v3/SEPEM_REL_v2/RELv2.csv")
+  df_rel["start"] = pd.to_datetime(df_rel["start date"])
+  df_rel["end"] = pd.to_datetime(df_rel["end date"])
+  df_rel = df_rel[["start","end"]]
 
-for index, row in df_rel.iterrows():
-  year = row["start"].year
-  datemin = row["start"]-dt.timedelta(hours=12)
-  datemax = row["end"]
-  getDoses(datemin,datemax,"DE")
+  for index, row in df_rel.iterrows():
+    year = row["start"].year
+    datemin = row["start"]-dt.timedelta(hours=12)
+    datemax = row["end"]
+    getDoses(datemin,datemax,"DE")
 
 #df_spe = generateSPE_time_doses()
 #generateGCRDoses(datemin,datemax)
