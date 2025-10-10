@@ -51,11 +51,10 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		//G4double GetTotalFlux() const {return factorSphere*total_particles*beamSurface*yearToSecond*solidAngle;}
 		//G4double GetTotalFlux() const {return listIntegratedFluxParticleKind[0]*beamSurface*yearToSecond*solidAngle;}
 		//G4double GetTotalParticleNumber(G4int Z) const {return gcrFlux->GetParticleFlux(Z);}
-		G4double GetMissionDuration() const {return yearToSecond;}
-		G4double GetMissionFactor() const 
+		//G4double GetMissionDuration() const {return yearToSecond;}
+		G4double GetGeometryFactor() const 
 		{
-			G4cout << "In GetMissionFactor " << beamSurface << G4endl;
-			return factorSphere*beamSurface;
+			return solidAngleFactor*beamSurface;
 		}
 		G4String GetIonName() const { return primaryParticle;}
 		//G4int GetNIons() const { return listIons.size();}
@@ -75,10 +74,10 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		G4GenericMessenger *fMess;
 		
 		G4ParticleGun *fParticleGun;
-		G4bool halfSphere;
+		//G4bool halfSphere;
   		G4double rsource, beamSurface, lowPosZ,factorSphere;
 
-		G4double yearToSecond,solidAngle;
+		G4double solidAngleFactor;
 
 		G4SPSRandomGenerator *biasRndm;
 		G4ParticleTable *particleTable;
@@ -90,7 +89,8 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		G4IonTable *ionTable;
 		G4String primaryParticle;
 
-		G4int idParticle,nevent,nrejected,sampleSize;
+		//G4int idParticle,nevent,nrejected,sampleSize;
+		G4int sampleSize;
 
 		G4int iNbin;
 		G4double ilogemin,ilogemax;
@@ -115,8 +115,6 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 
 	
 };
-
-//G4double calculateTotalFlux(const std::string& filename);
 
 
 #endif

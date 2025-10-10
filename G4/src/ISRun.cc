@@ -39,9 +39,9 @@ ISRun::ISRun()
 	id_event=0;
 	id_entry=0;
 	
-	minlogE = -5.0;
+	minlogE = 1.0;
 	maxlogE = 5.0;
- 	NbinsE = 10;
+ 	NbinsE = 100;
 
 	const MyGeometry *detectorConstruction = static_cast<const MyGeometry*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
 	ISmass = detectorConstruction->GetLogicIS()->GetMass()/kg;
@@ -57,7 +57,7 @@ ISRun::ISRun()
 	//const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	//mission_factor = generator->GetTotalParticleKindNumber();
-	//mission_factor = generator->GetMissionFactor()/joule;
+	mission_factor = generator->GetGeometryFactor()/joule;
 	n_event_record = generator->GetSampleSize();
 	
 	//G4cout << "n_event_record " << n_event_record << G4endl;
@@ -70,7 +70,7 @@ ISRun::ISRun()
 	//	GCRParticleWeights.push_back(mission_factor*generator->GetTotalParticleNumber(i));
 	//}
 	//G4cout << "factor = " << mission_factor << G4endl;
-	for (G4int Z=1;Z<=28;Z++) {Nparts.push_back(0);}
+	for (G4int Z=0;Z<NbinsE;Z++) {Nparts.push_back(0);}
 	
 }
 
@@ -98,7 +98,7 @@ void ISRun::RecordEvent(const G4Event* event)
 
  	auto  EDE_id = G4SDManager::GetSDMpointer()->GetCollectionID("PhantomSD/EDE");
   	
-  	G4int Z = (G4int)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetPDGCharge();
+  	//G4int Z = (G4int)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetPDGCharge();
 	//G4double E = event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
 	//G4double d = generator->GetEnergyFlux(Z,E);
 	//d = 1.0;
@@ -111,9 +111,9 @@ void ISRun::RecordEvent(const G4Event* event)
 
 	//G4cout << "Z = " << Z << G4endl;
 	
-	//Z=0;
+	//Z=1;
 	//Nparts[Z-1]++;
-	Nparts[Z-1]++;
+	Nparts[energyBin]++;
   	//G4cout << "Z = " << Z << G4endl;
 
 	//G4cout << id_event << " " << Z << G4endl;
@@ -122,8 +122,8 @@ void ISRun::RecordEvent(const G4Event* event)
 	// sum up the energy deposition and the square of it
 	for (auto itr : *EDEMap->GetMap()) {
 		//G4String nameEntry = G4String(std::to_string(itr.first))+G4String("_")+G4String(std::to_string(Z)));
-		fEDEMap[energyBin][Z]  += itr.second->GetEDE(); //sum
-		fDoseMap[energyBin][Z]  += itr.second->GetDose();  //sum
+		fEDEMap[energyBin][0]  += itr.second->GetEDE(); //sum
+		fDoseMap[energyBin][0]  += itr.second->GetDose();  //sum
 		//G4cout << id_event << " Z=" << Z << " " << itr.first << " " << fEDEMap[Z] << " " << fDoseMap[Z] << " " << Nparts[Z-1] << " " << itr.second->GetEDE() << G4endl;
 		
 		//if (fEDEMap[id_entry]!=0.0) {G4cout << "fedemap " << id_entry << " " << fEDEMap[id_entry] << G4endl;}
@@ -138,59 +138,62 @@ void ISRun::RecordEvent(const G4Event* event)
 
 		//G4int totpart=0;
 		
-		for (G4int iZ=0;iZ<=27;iZ++){
-			man->FillNtupleIColumn(0,iZ,Nparts[iZ]);
+		//for (G4int iZ=0;iZ<1;iZ++){
+		//	man->FillNtupleIColumn(0,iZ,Nparts[iZ]);
 			//totpart+=Nparts[iZ];
-		}
+		//}
 		//G4cout << id_event << " " << id_entry << " " << "totalparts = " << totpart << G4endl;
-		man->AddNtupleRow(0);
-		G4int iter(1);//,id(0);
+		//man->AddNtupleRow(0);
+		G4int iter(0);//,id(0);
 		//G4int i_organ = 0;
 		G4double fac;
 		G4double ede(0.0),HT(0.0),dose(0.0);
 
 		//for (auto itr : massMap) {
 		//G4String nameEntry = G4String(std::to_string(itr.first)+G4String("_")+G4String(particleName));
-		man->FillNtupleIColumn(iter,0,id_entry);
-		man->FillNtupleIColumn(iter,1,0);
-		for (G4int iZ=0;iZ<=27;iZ++)
-		{
+		for (auto imap : fEDEMap) {
+			energyBin = imap.first;
+			man->FillNtupleIColumn(iter,0,id_entry);
+			man->FillNtupleIColumn(iter,1,energyBin);
+			//for (G4int iZ=1;iZ<=1;iZ++)
+			//{
 
-			//G4int iZ = Z;
-			if (Nparts[iZ]>0)
-			{
-				fac = 1.0/ISmass/Nparts[iZ]*1e3; // #/m2/s/sr * m2 * s/y * sr / kg * J/# to mSv
-				//G4String Zstring = G4String(std::to_string(iZ+1));
-				HT = fac*fEDEMap[energyBin][iZ];
-				dose = fac*fDoseMap[energyBin][iZ];
-				//if (iZ==1) { G4cout << id_entry << " " << HT << " " << Nparts[iZ] << G4endl;}
-			}
-			else {HT=0.0; dose=0.0;}
-			//G4cout << iter << " " << itr.first << " " << itr.second << " " << id_entry << " " << N_organ << " " << HT << G4endl;
-			man->FillNtupleDColumn(iter,2*(iZ+1),HT);
-			man->FillNtupleDColumn(iter,2*(iZ+1)+1,dose);
-			
-			//G4cout << itr.first << " " << wT[itr.first] << G4endl;
-			if (iZ>=0) {ede += HT;}
-			//tot_dose += HT/N_organ;
-		}
-		man->AddNtupleRow(1);
+				//G4int iZ = Z;
+				if (Nparts[energyBin]>0)
+				{
+					fac = mission_factor/ISmass/Nparts[energyBin]*1e3; // #/m2/s/sr * m2 * s/y * sr / kg * J/# to mSv
+					//G4String Zstring = G4String(std::to_string(iZ+1));
+					HT = fac*fEDEMap[energyBin][0];
+					dose = fac*fDoseMap[energyBin][0];
+					G4cout << Nparts[energyBin] <<  " " << dose << " " << HT <<  G4endl;
+					//if (iZ==1) { G4cout << id_entry << " " << HT << " " << Nparts[iZ] << G4endl;}
+				}
+				else {HT=0.0; dose=0.0;}
+		
+				man->FillNtupleDColumn(iter,2,HT);
+				man->FillNtupleDColumn(iter,3,dose);
+				
+				//G4cout << itr.first << " " << wT[itr.first] << G4endl;
+				//if (iZ>=0) {ede += HT;}
+				//tot_dose += HT/N_organ;
+			//}
+			man->AddNtupleRow(0);
 		//++i_organ;
-		//}
+		}
 		++iter;
-		man->FillNtupleDColumn(iter,0,ede);
+		//man->FillNtupleDColumn(iter,0,ede);
 		//man->FillNtupleDColumn(iter,1,tot_dose*mission_factor*1e3);
-		man->AddNtupleRow(iter);	
+		//man->AddNtupleRow(iter);	
 		
 		//fEDEMap.clear();
 		//fDoseMap.clear();
-		for (G4int iZ=0;iZ<28;iZ++) 
-		{
-			Nparts[iZ]=0;
+		//for (G4int iZ=0;iZ<1;iZ++) 
+		//{
+		//	Nparts[0]=0;
 			//G4String Zstring = G4String(std::to_string(iZ+1));
-			fEDEMap[energyBin][iZ+1]=0;
-			fDoseMap[energyBin][iZ+1]=0;
-		}
+		//	fEDEMap[energyBin][0]=0;
+		//	fDoseMap[energyBin][0]=0;
+		//}
 
 	
 		id_event=0;

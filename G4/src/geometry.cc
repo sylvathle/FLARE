@@ -123,9 +123,9 @@ G4VPhysicalVolume *MyGeometry::Construct()
 	}
 	else if (phantomType=="IcruSphere")
 	{
-		solidPhantom = new G4Sphere("solidPhantom", 0., rPhantom, 0, 360*deg, 0, 180*deg);
+		solidPhantom = new G4Sphere("solidPhantom", 0., 0.15*m, 0, 360*deg, 0, 180*deg);
 		logicPhantom = new G4LogicalVolume(solidPhantom, materials->GetMaterial("IcruMat"), "logicPhantom");
-		physPhantom = new G4PVPlacement(0, G4ThreeVector(0.,0.*m,0.), logicPhantom, "physPhantom", logicWorld, false, 0, true);
+		physPhantom = new G4PVPlacement(0, G4ThreeVector(0.,0.*m,0.), logicPhantom, "physPhantom", logicAir, false, 0, true);
 	}
 	
 	return physWorld;
@@ -159,8 +159,6 @@ void MyGeometry::ConstructSDandField()
 		SetSensitiveDetector(logicPhantom, MFDet);
 	}
 
-	G4cout << "ConstructSDandField" << G4endl;
-
 	G4MultiFunctionalDetector* myScorer = new G4MultiFunctionalDetector("myCellScorer");
 	G4SDManager::GetSDMpointer()->AddNewDetector(myScorer);
 	G4VPrimitiveScorer* totalSurfFlux = new SBG4PSSphereSurfaceFlux("TotalSurfFlux",0);
@@ -176,7 +174,6 @@ void MyGeometry::SetModule(G4double thickness=4*mm)
 	thickModule = thickness;
 	if (thickness>0.1*mm)
 	{
-		G4cout << "Module thickness = " << thickness << G4endl;
 		solidModule = new G4Sphere("solidDome3", radiusModule, radiusModule+thickness, 0*deg, 360*deg, 0*deg, 180*deg);
 		logicModule = new G4LogicalVolume(solidModule,materials->GetMaterial("G4_Al"),"logicModule");
 		physModule = new G4PVPlacement(0, G4ThreeVector(0.,0.,0.), logicModule, "physModule", logicWorld, false, 0, true);

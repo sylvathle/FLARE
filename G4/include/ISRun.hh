@@ -86,7 +86,7 @@ private:
  //std::map<G4int, G4int> mapGroupedOrgans;
  EMAP fEDEMap, fDoseMap;
  G4int id_event,id_entry,n_event_record;//,N_groups;
- //G4double mission_factor; 
+ G4double mission_factor; 
  G4double minlogE,maxlogE;
  G4int NbinsE;
  //G4int samplesize;

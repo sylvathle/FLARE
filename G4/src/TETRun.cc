@@ -52,28 +52,12 @@ TETRun::TETRun()
 	for (auto itr : massMap) 
 	{
 		massMap[itr.first]=massMap[itr.first]/kg;
-		//G4cout << itr.first << " " << massMap[itr.first]/kg << G4endl;
 	}
-	//organsGrouped = GetOrgansGroup("organsInfo.csv");
-	//mapGroupedOrgans = generateNumberedMap(organsGrouped);
-	//N_groups = GetNGroups(mapGroupedOrgans);
-	//wT = GetwT("../scripts/organsInfo.csv");
-  //	csvFile = std::ofstream("results.csv");
-	
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
-	//mission_factor = generator->GetTotalParticleKindNumber();
-	mission_factor = generator->GetMissionFactor()/joule;
+	//G4cout << std::setprecision(20) << 1.0/joule << G4endl;
+	//G4cout << std::setprecision(20) << 1.0*joule << G4endl;
+	mission_factor = generator->GetGeometryFactor()/joule;
 	n_event_record = generator->GetSampleSize();
-	//GCRParticleWeights = generator->GetGCRParticlesWeights();
-	//for (G4int i=0;i<GCRParticleWeights.size();i++) {GCRParticleWeights[i]=generator->GetTotalParticleNumber(i)/joule;}
-	//for (G4int i=0;i<generator->GetNIons();i++)
-	//{
-	//	//G4cout << i << " " << generator->GetTotalParticleNumber(i) << G4endl;
-	//	GCRParticleWeights.push_back(mission_factor*generator->GetTotalParticleNumber(i));
-	//}
-	//G4cout << "factor = " << mission_factor << G4endl;
-	//for (G4int Z=1;Z<=1;Z++) {Nparts.push_back(0);}
-
 }
 
 TETRun::~TETRun()
@@ -85,8 +69,6 @@ TETRun::~TETRun()
 
 void TETRun::RecordEvent(const G4Event* event)
 {
-	// Hits collections
-	//
 	++id_event;
 	
 	G4HCofThisEvent* HCE = event->GetHCofThisEvent();
@@ -96,7 +78,6 @@ void TETRun::RecordEvent(const G4Event* event)
   	
   	G4int Z = (G4int)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetPDGCharge();
   	G4double A = (G4double)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetBaryonNumber();
-  	//G4cout << A << " " << event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy()/A <<  G4endl;
 	G4double energy = event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy()/A;
   	G4int energyBin = G4int((log10(energy)-minlogE)/(maxlogE-minlogE)*NbinsE);
 	G4double energyBinMin = pow(10,energyBin/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
@@ -109,90 +90,48 @@ void TETRun::RecordEvent(const G4Event* event)
 	auto* EDEMap = static_cast<G4THitsMap<HitInfo>*>(HCE->GetHC(EDE_id));
 	// sum up the energy deposition and the square of it
 	for (auto itr : *EDEMap->GetMap()) {
-		//G4String nameEntry = G4String(std::to_string(itr.first))+G4String("_")+G4String(std::to_string(Z)));
 		G4int id = itr.first+Z*100000; 
-		//G4cout << energyBin << " " << Z << " " << id << G4endl;
 		
 		fEDEMap[energyBin][id]  += itr.second->GetEDE(); //sum
 		fDoseMap[energyBin][id]  += itr.second->GetDose();  //sum
-		//G4cout << energyBin << " " << id << " " << fEDEMap[energyBin][id] << G4endl;
-		//if (fEDEMap[id_entry]!=0.0) {G4cout << "fedemap " << id_entry << " " << fEDEMap[id_entry] << G4endl;}
 	}
 	
 	if (id_event==n_event_record)
 	{
 		G4AnalysisManager *man = G4AnalysisManager::Instance();
-		//for (auto ip : Nparts)
-		//{
-			//man->FillNtupleIColumn(0,iZ,Nparts[iZ]);
-			//man->FillNtupleIColumn(0,0,ip.first);
-			//for (auto iz : ip.second)
-			//{
-				//man->FillNtupleIColumn(0,iz.first,ip.first)
-				//G4cout << ip.first << " " << iz.first << " " << iz.second << G4endl;
-			//	man->FillNtupleIColumn(0,iz.first+1,iz.second);
-			//}
-			//man->AddNtupleRow(0);
-		//}
-		//for (G4int iZ=0;iZ<=0;iZ++){man->FillNtupleIColumn(0,iZ,Nparts[iZ]);}
 		
 		G4int iter(0), id(0);
-		//G4int i_organ = 0;
 		G4double fac;
 		G4double HT(0.0),dose(0.0);
 
 		for (auto imap : fEDEMap) {
 			energyBin = imap.first;
-			//energyBinMin = pow(10,energyBin/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
-			//energyBinMax = pow(10,(energyBin+1)/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
-			//ebinsize = energyBinMax - energyBinMin;
 			for (auto itr : massMap) {
-				//G4String nameEntry = G4String(std::to_string(itr.first)+G4String("_")+G4String(particleName));
-				//G4cout << id_entry << " " << itr.first << G4endl;
-				//man->FillNtupleIColumn(iter,0,id_entry);
-				//fac = mission_factor/massMap[itr.first]*1e3;
 				man->FillNtupleIColumn(iter,0,itr.first);
 				man->FillNtupleIColumn(iter,1,energyBin);
-				//G4cout << "mission_factor " << mission_factor << G4endl;
-				//G4cout << itr.first << " Mass " << massMap[itr.first] << G4endl;
-				fac = mission_factor/massMap[itr.first]*1e3; //mission_factor (m2.sr) / massMap (kg) / N  ->>> mGy.m2.sr / particle
+				//mission_factor = (Joules).(m2) / massMap (kg)  ->>> mGy.m2
+				fac = mission_factor/massMap[itr.first]*1e3;
 				for (G4int iZ=0;iZ<=1;iZ++)
 				{
 					id = itr.first+(iZ+1)*100000;
 					if (Nparts[energyBin][iZ]<=0)
 					{
-						//G4cout << fEDEMap[energyBin][id] << " " << energyBin << " " << iZ << " " << Nparts[energyBin][iZ] << " " << GCRParticleWeights[iZ] << G4endl;
-						//fac = GCRParticleWeights[iZ]/massMap[itr.first]/Nparts[energyBin][iZ]*1e3;
-						//HT = fEDEMap[energyBin][id]/massMap[itr.first]/Nparts[energyBin][iZ]*1e3/joule;
-						//dose = fDoseMap[energyBin][id]/massMap[itr.first]/Nparts[energyBin][iZ]*1e3/joule;
 						continue;
 					}
 					
-					//G4cout << iZ << " " << energyBinMin << " " << energyBinMax << " " << fDoseMap[energyBin][id] << "  " << fEDEMap[energyBin][id] << "  " << itr.first << "  " << massMap[itr.first] <<  "  " << ebinsize << G4endl;
 					HT = fac*fEDEMap[energyBin][id];
 					dose = fac*fDoseMap[energyBin][id];
-					//G4cout << iter << " " << itr.first << " " << itr.second << " " << id_entry << " " << N_organ << " " << HT << G4endl;
-					//man->FillNtupleIColumn(iter,3*iZ+2,Nparts[energyBin][iZ]);
 					man->FillNtupleDColumn(iter,2*iZ+2,HT);
 					man->FillNtupleDColumn(iter,2*iZ+3,dose);
-					//G4cout << iter << " " << 2*(iZ+1) << " " << Nparts[energyBin][iZ] << " " << HT << " " << dose << G4endl;
-					//G4cout << itr.first << " " << wT[itr.first] << G4endl;
-					//ede += HT*wT[itr.first];
-					//tot_dose += HT/N_organ;
 				}
 				man->AddNtupleRow(0);
-				//++i_organ;
 			}
 		}
 		++iter;
-		//man->FillNtupleDColumn(iter,0,ede);
-		//man->FillNtupleDColumn(iter,1,tot_dose*mission_factor*1e3);
-		//man->AddNtupleRow(iter);	
 		
 		fEDEMap.clear();
 		fDoseMap.clear();
 		Nparts.clear();
-		//for (G4int iZ=0;iZ<=0;iZ++) {Nparts[iZ]=0;}
 	
 		id_event=0;
 		++id_entry;

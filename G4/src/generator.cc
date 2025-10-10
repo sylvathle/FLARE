@@ -9,7 +9,7 @@
 
 
 // Function to pick an index from the vector based on probabilities
-int pickIndex(const std::vector<double>& probabilities) {
+/*int pickIndex(const std::vector<double>& probabilities) {
     // Calculate cumulative probabilities
     std::vector<double> cumulativeProbabilities(probabilities.size());
     double sum = 0.0;
@@ -37,7 +37,7 @@ int pickIndex(const std::vector<double>& probabilities) {
 
     // In case of rounding errors, return the last index
     return probabilities.size() - 1;
-}
+}*/
 
 
 //MyPrimaryGenerator::MyPrimaryGenerator():gcrFlux(new GCRFlux())
@@ -46,33 +46,26 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 	fParticleGun = new G4ParticleGun(1);
 	//fSources = new G4GeneralParticleSource();
 
-	halfSphere = false;
+	///halfSphere = false;
 	//halfSphere = true;
 
-	nevent = 0;
-	nrejected = 0;
+	//nevent = 0;
+	//nrejected = 0;
 
-	//rsource = 2.1*m;
-	//rsource = 3.5*m;
-	
-	//rsource = static_cast<const MyGeometry*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction()->GetRSource());
-	//const MyGeometry *detectorConstruction = static_cast<const MyGeometry*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-	//rsource = detectorConstruction->GetRModule();
-	
-	//G4cout << "rsource = " << rsource << G4endl;
-	
-	beamSurface = 4.0 * PI_ * rsource*rsource;
+	// Surface of beam in m2
+	beamSurface = 4.0 * PI_ * rsource*rsource/m/m;
+	//beamSurface = 4.0 * PI_ * rsource;
 	lowPosZ = -rsource;
-	factorSphere = 1.0; //Case GCR is taken from all directions
+	//factorSphere = 1.0; //Case GCR is taken from all directions
 
 	// If situation of the Lunar surface, the starting surface is half sphere, the mimal z position is 0, 
 	//   and we are only considering half of the possible origins (the other being blocked by the Moon).
-	if (halfSphere) 
+	/*if (halfSphere) 
 	{
 		beamSurface/=2.0;
 		lowPosZ=0.0;
 		factorSphere = 1.0;//0.5*.7213;
-	}
+	}*/
 
 	iNbin = 100; //bins.GetNbins();
 	ilogemin = 1; //logMeV //bins.GetMinE(); //1 eV
@@ -81,21 +74,16 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 	ilogemin_gen = 1; //logMeV //bins.GetMinE(); //1 eV
 	ilogemax_gen = 5; //logMeV //bins.GetMaxE(); //100 GeV
 	
-	//particleTable = G4ParticleTable::GetParticleTable();
 	ionTable = G4IonTable::GetIonTable();
 	ionTable->CreateAllIon();
-
-	//G4double excitEnergy = 0*keV;
-
-	//G4ParticleDefinition* particleDef = ionTable->GetIon(26,56,excitEnergy);
-
-	//G4cout << particleDef->GetParticleName() << G4endl;
-
-	//ionTable->DumpTable();
 	
 	biasRndm = new G4SPSRandomGenerator();
-	yearToSecond = 24.0 * 3600.0;
-	solidAngle = PI_;
+	//yearToSecond = 24.0 * 3600.0;
+
+	// Important scaling factor that rescale the angular distribution to 1/(4pi)
+	// A factor pi must be introduced due to the cosine distribution over the surface of the 
+	// sphere, then dividing by 4pi to normalize to isotropic distribution = 1/4
+	solidAngleFactor = 0.25; 
 
 	//listIons.push_back("proton");
 	//listIons.push_back("alpha");
@@ -103,14 +91,6 @@ MyPrimaryGenerator::MyPrimaryGenerator()//:gcrFlux()
 	//G4int n_ions_kind = listIons.size();
 	ions = getIons();
 	
-	//for (int i=0;i<n_ions_kind;i++) {Npart.push_back(0);} 
-	//for (int i=0;i<n_ions_kind;i++) {ratioPart.push_back(G4double(1.0));} 
-	//for (int i=0;i<n_ions_kind;i++) {weightToUse.push_back(G4double(1.0/n_ions_kind));} 
-	//for (int i=0;i<n_ions_kind;i++) {SetParticleRatio(i+1,0);} 
-	//SetParticleRatio(1,1);
-	//for (int i=0;i<n_ions_kind;i++) {G4cout << weightToUse[i] << G4endl;}
-	//weightToUse[0] = 1.0; 
-
 	for (int i=0;i<iNbin;i++) {Npart.push_back(0);}
 	
 	sampleSize = 1e5;
@@ -169,6 +149,7 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 	G4double r = sqrt(rsource*rsource-posz0*posz0);
 	G4double posx0 = r * cos(thetapos);
 	G4double posy0 = r * sin(thetapos);
+
 	
 	//posz0 = 2.2*m;
 	//posy0 = -2.5*m;
@@ -213,9 +194,53 @@ void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 }
 
 
+G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
+{
+	// Normalize pos
+	G4double normpos = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+	G4double normposx = pos[0]/normpos;
+	G4double normposy = pos[1]/normpos;
+	G4double normposz = pos[2]/normpos;
+
+	//Calculate vparallel
+	G4double sizevpar = -sqrt(1-CLHEP::RandFlat::shoot(0.0,1.0));
+	//G4double sizevpar = -sqrt(1-CLHEP::RandFlat::shoot(0.0,0.0)); // A bit of angle
+	//sizevpar = -1.0; //Completely perpendicular from the surface
+	G4double xpar = normposx * sizevpar;
+	G4double ypar = normposy * sizevpar;
+	G4double zpar = normposz * sizevpar;
+
+	
+	// Calculate vperpendicular
+	// First we need a base in the perpendicular plane
+	// First base
+	G4double normb1 = sqrt(zpar*zpar+xpar*xpar);
+	G4double b1x = zpar/normb1;
+	G4double b1y = 0.0;
+	G4double b1z = -xpar/normb1;
+
+	//Second base
+	G4double b2x = normposy*b1z - normposz*b1y;
+	G4double b2y = normposz*b1x - normposx*b1z;
+	G4double b2z = normposx*b1y - normposy*b1x;
+
+	
+	G4double sizevperp = sqrt(1.0 - sizevpar*sizevpar);	
+
+
+	//G4cout << sizevpar << " " << sizevperp << " " << b1x << " " << b2x << G4endl; 
+	G4double theta = CLHEP::RandFlat::shoot(-PI_,PI_);
+	//theta = 0;
+	G4double mx0rot = sizevperp * (b1x * cos(theta) + b2x * sin(theta)) + xpar;
+	G4double my0rot = sizevperp * (b1y * cos(theta) + b2y * sin(theta)) + ypar;
+	G4double mz0rot = sizevperp * (b1z * cos(theta) + b2z * sin(theta)) + zpar;
+
+	return G4ThreeVector(mx0rot,my0rot,mz0rot);
+
+}
 
 // Function generating a cosine distribution from the source point
-G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
+/*G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
 {
 	// Normalize pos
 	G4double normpos = sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
@@ -276,7 +301,7 @@ G4ThreeVector MyPrimaryGenerator::GenMomentum(G4ThreeVector pos)
 	zrot = -zrot/normrot;
 	
 	return G4ThreeVector(xrot,yrot,zrot);
-}
+}*/
 
 	
 void MyPrimaryGenerator::SetPrimary(G4String particle_)
@@ -306,17 +331,18 @@ void MyPrimaryGenerator::SetBeamRadius(G4double r)
 {
 	rsource = r;
 	beamSurface = 4.0 * PI_ * rsource*rsource/m/m;
+	//beamSurface = 4.0 * PI_ * rsource/m;
 	//G4cout << "BeamSurafce " << beamSurface << G4endl;
 	lowPosZ = -rsource;
 
 	// If situation of the Lunar surface, the starting surface is half sphere, the mimal z position is 0, 
 	//   and we are only considering half of the possible origins (the other being blocked by the Moon).
-	if (halfSphere) 
+	/*if (halfSphere) 
 	{
 		beamSurface/=2.0;
 		lowPosZ=0.0;
 		factorSphere = 1.0; //0.5*.7213;
-	}
+	}*/
 	
 	//G4cout << "SetBeamRadius  " << rsource << G4endl;
 }
