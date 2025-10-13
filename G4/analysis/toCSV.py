@@ -108,10 +108,10 @@ df_all_dose_sample.reset_index(inplace=True)
 print (df_all_dose_sample)
 df_all_dose_sample[['scenario', 'thick', 'particle']] = df_all_dose_sample['scenario'].str.split('_', expand=True)
 df_all_dose_sample = df_all_dose_sample[["scenario", "thick", "particle", "organId","i_sample","eBin","N","DE","AD"]]
-df_all_dose_sample.to_csv("doses_samples_v3.csv",index=False)
+df_all_dose_sample.to_csv("doses_samples.csv",index=False)
 
 df_all_dose.reset_index(inplace=True)
 df_all_dose[['scenario', 'thick', 'particle']] = df_all_dose['scenario'].str.split('_', expand=True)
 df_all_dose = df_all_dose[["scenario",'thick','particle',"organId","eBin","DE","DE_b","DE_t","AD","AD_b","AD_t"]]
-df_all_dose.to_csv("data_dose_v3.csv",index=False)
+df_all_dose.to_csv("data_dose.csv",index=False)
 
