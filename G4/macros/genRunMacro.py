@@ -48,7 +48,8 @@ fmacros.write("/SIM/scoring/phantom "+phantom+"\n\n")
 
 fmacros.write("/run/initialize\n\n")
 
-fmacros.write("/SIM/scoring/putModule "+str(thicknessModule)+"\n")
+if thicknessModule>0:
+    fmacros.write("/SIM/scoring/putModule "+str(thicknessModule)+"\n")
 fmacros.write("/SIM/scoring/sampleSize "+str(nsim)+"\n")
 #fmacros.write("/SIM/scoring/resDir "+"../results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
 fmacros.write("/SIM/scoring/resDir "+"/data/results/"+scenario+"_"+str(thicknessModule)+"_"+particle+"\n")
