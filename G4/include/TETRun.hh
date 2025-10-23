@@ -93,5 +93,8 @@ private:
  //std::ofstream csvFile;
  G4double minlogE,maxlogE;
  G4int NbinsE;
+
+
+ void RecordRunDoses();
 };
 #endif

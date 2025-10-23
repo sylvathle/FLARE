@@ -9,6 +9,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"
+#include "G4ParticleTable.hh"
 #include "G4ParticleMomentum.hh"
 #include "G4GenericMessenger.hh"
 #include "G4SPSRandomGenerator.hh"
@@ -18,7 +19,6 @@
 
 #include "ions.hh"
 
-//#include "functions.hh"
 
 #include <vector>
 #include <map>
@@ -47,26 +47,18 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		G4double GetBeamSurface() const {return beamSurface;}
 		G4double GetRSource() const {return rsource;}
 		
-		
-		//G4double GetTotalFlux() const {return factorSphere*total_particles*beamSurface*yearToSecond*solidAngle;}
-		//G4double GetTotalFlux() const {return listIntegratedFluxParticleKind[0]*beamSurface*yearToSecond*solidAngle;}
-		//G4double GetTotalParticleNumber(G4int Z) const {return gcrFlux->GetParticleFlux(Z);}
-		//G4double GetMissionDuration() const {return yearToSecond;}
 		G4double GetGeometryFactor() const 
 		{
 			return solidAngleFactor*beamSurface;
 		}
 		G4String GetIonName() const { return primaryParticle;}
-		//G4int GetNIons() const { return listIons.size();}
-		//std::vector<G4String> GetParticleList() const {return ionsName;}
-		//std::vector<G4double> GetGCRParticlesWeights() const {return gcrFlux->GetlistParticleWeight();}
 
 		// Return the flux for an ions Z with an arbitrary energy E
-		//G4double GetEnergyFlux(G4int Z, G4double E) const {return gcrFlux->GetEnergyFlux(Z,E);};
-		//G4int GetNGenerated(G4int Z) const {return Npart[Z-1];}
-		G4int GetNGenerated(G4int i) const {return Npart[i];}
+		std::map<G4int,G4int> GetNGenerated() const {return Npart;}
+		G4int GetNGenerated(G4int i) {return Npart[i];}
 		
-		G4int GetSampleSize() const {return sampleSize;}
+		//G4int GetSampleSize() const {return sampleSize;}
+		//G4int nevents;
 		
 		
 	private :
@@ -74,41 +66,31 @@ class MyPrimaryGenerator : public G4VUserPrimaryGeneratorAction
 		G4GenericMessenger *fMess;
 		
 		G4ParticleGun *fParticleGun;
-		//G4bool halfSphere;
-  		G4double rsource, beamSurface, lowPosZ,factorSphere;
+  		G4double rsource, beamSurface; //, lowPosZ;
 
 		G4double solidAngleFactor;
 
 		G4SPSRandomGenerator *biasRndm;
+		G4ParticleDefinition *particleDef;
 		G4ParticleTable *particleTable;
-
-		//const GCRFlux *gcrFlux;
-		//const G4String fluxFile;
 
 		std::map<G4String,Ion> ions;
 		G4IonTable *ionTable;
 		G4String primaryParticle;
 
-		//G4int idParticle,nevent,nrejected,sampleSize;
-		G4int sampleSize;
+		//G4int sampleSize;
 
 		G4int iNbin;
 		G4double ilogemin,ilogemax;
 		G4double ilogemin_gen,ilogemax_gen;
 
-		//std::vector<G4ParticleDefinition *> listParticles;
-		//std::map<G4String,SBG4SPSEneDistribution *> listEneGenerator;
-
-		//std::vector<G4double> weightToUse;
-		//std::vector<G4double> ratioPart;
-		//std::vector<G4String> listIons;
-		std::vector<G4int> Npart;
+		std::map<G4int,G4int> Npart;
 
 		G4ThreeVector GenMomentum(G4ThreeVector pos);
 		void SetMinkE(G4double);
 		void SetMaxkE(G4double);
 		void SetPrimary(G4String);
-		void SetSampleSize(G4int s) {sampleSize=s;}
+		//void SetSampleSize(G4int s) {sampleSize=s;}
 		void SetBeamRadius(G4double r);
 		void DefineCommands();
 

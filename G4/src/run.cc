@@ -135,51 +135,19 @@ void MyRunAction::EndOfRunAction(const G4Run* aRun)
 {
 
 
+	G4cout << "EndOfRunAction" << G4endl;
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	
 	auto man = G4AnalysisManager::Instance();
 
-	for (int i=0;i<100;i++)
+
+	//std::map<G4int,G4int> Npart = generator->GetNGenerated();
+	for (const auto &[key, value]: generator->GetNGenerated())
 	{
-		man->FillNtupleIColumn(1,0,i);
-		man->FillNtupleIColumn(1,1,generator->GetNGenerated(i));
+		man->FillNtupleIColumn(1,0,key);
+		man->FillNtupleIColumn(1,1,value);
 		man->AddNtupleRow(1);
 	}
-
-	/*std::map<G4int, TotalFlux>::iterator itF;
-
-	std::map<G4String,Ion> Ions = getIons();
-
-        // Record fluxes
-        for (itF = flux.begin(); itF != flux.end(); itF++)
-        {
-                G4int ikE = itF->first;
-                G4String oParticle;
-                //G4int iZ = Ions[iParticle].getZ();
-		G4int iZ = 1;
-
-                //man->FillNtupleSColumn(4,0,iParticle);
-                //man->FillNtupleIColumn(4,1,iZ);
-                //man->FillNtupleDColumn(4,2,generator->GetTotalParticleNumber(iZ-1));
-                //man->AddNtupleRow(4);
-
-                std::map<G4String,ParticleSpectra> ofluxes = itF->second.GetFluxes();
-                std::map<G4String,ParticleSpectra>::iterator itoF;
-
-                for (itoF = ofluxes.begin(); itoF != ofluxes.end();itoF++)
-                {
-                        oParticle = itoF->first;
-                        for (G4int oebin=0; oebin<itoF->second.GetNbin();oebin++)
-                        {
-                                man->FillNtupleIColumn(1,0,ikE);
-                                man->FillNtupleSColumn(1,1,oParticle);
-                                man->FillNtupleDColumn(1,2,oebin);
-                                man->FillNtupleDColumn(1,3,itoF->second.GetBin(oebin));
-                                man->AddNtupleRow(1);
-                        }
-                }
-
-        }*/
 
 	man->Write();
 	man->CloseFile();

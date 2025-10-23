@@ -36,8 +36,8 @@
 ISRun::ISRun()
 :G4Run()
 {
-	id_event=0;
-	id_entry=0;
+	//id_event=0;
+	//id_entry=0;
 	
 	minlogE = 1.0;
 	maxlogE = 5.0;
@@ -45,33 +45,10 @@ ISRun::ISRun()
 
 	const MyGeometry *detectorConstruction = static_cast<const MyGeometry*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
 	ISmass = detectorConstruction->GetLogicIS()->GetMass()/kg;
-	//fTetData = detectorConstruction->GetICRP145phantom();
 	
-	//for (auto itr : massMap) {massMap[itr.first]=massMap[itr.first]/kg;}
-	//organsGrouped = GetOrgansGroup("organsInfo.csv");
-	//mapGroupedOrgans = generateNumberedMap(organsGrouped);
-	//N_groups = GetNGroups(mapGroupedOrgans);
-	//wT = GetwT("organsInfo.csv");
-  //	csvFile = std::ofstream("results.csv");
-	
-	//const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
-	//mission_factor = generator->GetTotalParticleKindNumber();
 	mission_factor = generator->GetGeometryFactor()/joule;
-	n_event_record = generator->GetSampleSize();
-	
-	//G4cout << "n_event_record " << n_event_record << G4endl;
-	//rsource = generator->GetRSource()/m;
-	//GCRParticleWeights = generator->GetGCRParticlesWeights();
-	//total_flux = generator->GetTotalFlux()/joule;
-	//for (G4int i=0;i<generator->GetNIons();i++)
-	//{
-	//	//G4cout << i << " " << generator->GetTotalParticleNumber(i) << G4endl;
-	//	GCRParticleWeights.push_back(mission_factor*generator->GetTotalParticleNumber(i));
-	//}
-	//G4cout << "factor = " << mission_factor << G4endl;
-	for (G4int Z=0;Z<NbinsE;Z++) {Nparts.push_back(0);}
-	
+	//n_event_record = generator->GetSampleSize();
 }
 
 ISRun::~ISRun()
@@ -79,13 +56,15 @@ ISRun::~ISRun()
 	//delete generator;
  	fEDEMap.clear();
  	fDoseMap.clear();
-	Nparts.clear();
+	//Nparts.clear();
 }
 
 void ISRun::RecordEvent(const G4Event* event)
 {
 	// Hits collections
 	//
+	G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
+	G4int eventToBeProcessed = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEventToBeProcessed();
 	
 	G4HCofThisEvent* HCE = event->GetHCofThisEvent();
 	if(!HCE) 
@@ -94,111 +73,65 @@ void ISRun::RecordEvent(const G4Event* event)
 	return;
 	}
 
-	++id_event;
+	//++id_event;
 
  	auto  EDE_id = G4SDManager::GetSDMpointer()->GetCollectionID("PhantomSD/EDE");
   	
-  	//G4int Z = (G4int)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetPDGCharge();
-	//G4double E = event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy();
-	//G4double d = generator->GetEnergyFlux(Z,E);
-	//d = 1.0;
-	
-	//G4cout << Z << " " << E << " " << d << G4endl;
-
-	//G4cout << "ISR " << rsource << " " << z << " " << (G4double) (totalAngle) / (G4double)(n_events) << G4endl;
-
   	G4int energyBin = G4int((log10(event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy())-minlogE)/(maxlogE-minlogE)*NbinsE);
 
-	//G4cout << "Z = " << Z << G4endl;
-	
-	//Z=1;
-	//Nparts[Z-1]++;
-	Nparts[energyBin]++;
-  	//G4cout << "Z = " << Z << G4endl;
-
-	//G4cout << id_event << " " << Z << G4endl;
-  	
 	auto* EDEMap = static_cast<G4THitsMap<HitInfo>*>(HCE->GetHC(EDE_id));
 	// sum up the energy deposition and the square of it
 	for (auto itr : *EDEMap->GetMap()) {
-		//G4String nameEntry = G4String(std::to_string(itr.first))+G4String("_")+G4String(std::to_string(Z)));
 		fEDEMap[energyBin][0]  += itr.second->GetEDE(); //sum
 		fDoseMap[energyBin][0]  += itr.second->GetDose();  //sum
-		//G4cout << id_event << " Z=" << Z << " " << itr.first << " " << fEDEMap[Z] << " " << fDoseMap[Z] << " " << Nparts[Z-1] << " " << itr.second->GetEDE() << G4endl;
-		
-		//if (fEDEMap[id_entry]!=0.0) {G4cout << "fedemap " << id_entry << " " << fEDEMap[id_entry] << G4endl;}
-		//G4cout << id_entry << " " << id_event << " " << itr.second->GetEDE() << " " << fEDEMap[0] << G4endl;
 	}
 
+	//G4cout << n_event_record << G4endl;
 	
-	//G4cout << "SSSSSSSSSS  " << fEDEMap.size() << G4endl;
-	if (id_event==n_event_record)
+	if (eventID+1==eventToBeProcessed)
 	{
-		G4AnalysisManager *man = G4AnalysisManager::Instance();
-
-		//G4int totpart=0;
-		
-		//for (G4int iZ=0;iZ<1;iZ++){
-		//	man->FillNtupleIColumn(0,iZ,Nparts[iZ]);
-			//totpart+=Nparts[iZ];
-		//}
-		//G4cout << id_event << " " << id_entry << " " << "totalparts = " << totpart << G4endl;
-		//man->AddNtupleRow(0);
-		G4int iter(0);//,id(0);
-		//G4int i_organ = 0;
-		G4double fac;
-		G4double ede(0.0),HT(0.0),dose(0.0);
-
-		//for (auto itr : massMap) {
-		//G4String nameEntry = G4String(std::to_string(itr.first)+G4String("_")+G4String(particleName));
-		for (auto imap : fEDEMap) {
-			energyBin = imap.first;
-			man->FillNtupleIColumn(iter,0,id_entry);
-			man->FillNtupleIColumn(iter,1,energyBin);
-			//for (G4int iZ=1;iZ<=1;iZ++)
-			//{
-
-				//G4int iZ = Z;
-				if (Nparts[energyBin]>0)
-				{
-					fac = mission_factor/ISmass/Nparts[energyBin]*1e3; // #/m2/s/sr * m2 * s/y * sr / kg * J/# to mSv
-					//G4String Zstring = G4String(std::to_string(iZ+1));
-					HT = fac*fEDEMap[energyBin][0];
-					dose = fac*fDoseMap[energyBin][0];
-					G4cout << Nparts[energyBin] <<  " " << dose << " " << HT <<  G4endl;
-					//if (iZ==1) { G4cout << id_entry << " " << HT << " " << Nparts[iZ] << G4endl;}
-				}
-				else {HT=0.0; dose=0.0;}
-		
-				man->FillNtupleDColumn(iter,2,HT);
-				man->FillNtupleDColumn(iter,3,dose);
-				
-				//G4cout << itr.first << " " << wT[itr.first] << G4endl;
-				//if (iZ>=0) {ede += HT;}
-				//tot_dose += HT/N_organ;
-			//}
-			man->AddNtupleRow(0);
-		//++i_organ;
-		}
-		++iter;
-		//man->FillNtupleDColumn(iter,0,ede);
-		//man->FillNtupleDColumn(iter,1,tot_dose*mission_factor*1e3);
-		//man->AddNtupleRow(iter);	
-		
-		//fEDEMap.clear();
-		//fDoseMap.clear();
-		//for (G4int iZ=0;iZ<1;iZ++) 
-		//{
-		//	Nparts[0]=0;
-			//G4String Zstring = G4String(std::to_string(iZ+1));
-		//	fEDEMap[energyBin][0]=0;
-		//	fDoseMap[energyBin][0]=0;
-		//}
-
-	
-		id_event=0;
-		++id_entry;
+		RecordRunDoses();
+		//id_event=0;
 	}
+}
+
+void ISRun::RecordRunDoses()
+{
+	//G4cout << "RecordEvent" << G4endl;
+	G4AnalysisManager *man = G4AnalysisManager::Instance();
+	//G4cout << "RecordEvent" << G4endl;
+
+	//G4int iter(0);//,id(0);
+	G4double fac;
+	G4double ede(0.0),HT(0.0),dose(0.0);
+	G4int energyBin(0);
+	//G4cout << "RecordEvent" << G4endl;
+
+	//for (auto itr : massMap) {
+	//G4String nameEntry = G4String(std::to_string(itr.first)+G4String("_")+G4String(particleName));
+	for (auto imap : fEDEMap) {
+		//G4cout << "RecordEvent" << G4endl;
+		energyBin = imap.first;
+		//G4cout << energyBin << " " << id_entry << G4endl;
+			
+		fac = mission_factor/ISmass*1e3; // #/m2/s/sr * m2 * s/y * sr / kg * J/# to mSv
+		HT = fac*fEDEMap[energyBin][0];
+		dose = fac*fDoseMap[energyBin][0];
+
+		// Don't record the data if no energy deposited
+		if ((HT==0) && (dose==0)){continue;}
+		
+		man->FillNtupleIColumn(0,0,id_entry);
+		man->FillNtupleIColumn(0,1,energyBin);
+		man->FillNtupleDColumn(0,2,HT);
+		man->FillNtupleDColumn(0,3,dose);
+			
+		man->AddNtupleRow(0);
+	}
+	//++iter;
+	//id_event=0;
+	//++id_entry;
+
 }
 
 /*void ISRun::Merge(const G4Run* run)

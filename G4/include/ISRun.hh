@@ -93,6 +93,7 @@ private:
 
  G4double rsource;
  const MyPrimaryGenerator *generator;
+ void RecordRunDoses();
 
 
 };
