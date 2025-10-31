@@ -73,35 +73,36 @@ MyPrimaryGenerator::~MyPrimaryGenerator()
 
 void MyPrimaryGenerator::GeneratePrimaries(G4Event* anEvent)
 {
-	//G4ParticleDefinition* particleDef = ionTable->GetIon(ions[primaryParticle].getZ(),ions[primaryParticle].getA(),0*keV);
+	G4double pow_energy = CLHEP::RandFlat::shoot(ilogemin_gen,ilogemax_gen);
+	G4double energy = pow(10,pow_energy)*MeV;
+
 	if (ions.find(primaryParticle) != ions.end()) 
 	{
-		G4cout << "Is an ion" << G4endl;
 		particleDef = ionTable->GetIon(ions[primaryParticle].getZ(),ions[primaryParticle].getA(),0*keV);
+		//G4cout << "Is an ion " << particleDef->GetBaryonNumber() << G4endl;
+		energy *= particleDef->GetBaryonNumber();
 	}
-	else {particleDef = particleTable->FindParticle(primaryParticle);}
+	else 
+	{
+		particleDef = particleTable->FindParticle(primaryParticle);
+	}
+
+	G4double double_iebin = (G4double)iNbin*(pow_energy-ilogemin)/(ilogemax-ilogemin);	
+	G4int iebin=(G4int)double_iebin;
+	if (double_iebin<0) {iebin = iebin-1;}
+	if (Npart.find(iebin) == Npart.end()) {Npart[iebin] = 1;} 
+	else {Npart[iebin]++;}
 	
 	
 	G4double thetapos = CLHEP::RandFlat::shoot(-PI_,PI_);
-
 	G4double posz0 = CLHEP::RandFlat::shoot(-rsource,rsource);
 	G4double r = sqrt(rsource*rsource-posz0*posz0);
 	G4double posx0 = r * cos(thetapos);
 	G4double posy0 = r * sin(thetapos);
 
-	
-	G4double pow_energy = CLHEP::RandFlat::shoot(ilogemin_gen,ilogemax_gen);
-	G4double energy = particleDef->GetBaryonNumber()*pow(10,pow_energy)*MeV;
-
 	G4ThreeVector pos(posx0,posy0,posz0);
 
 	G4ThreeVector mom = GenMomentum(pos);
-	G4int iebin = iNbin*(pow_energy-ilogemin)/(ilogemax-ilogemin);	
-	if (Npart.find(iebin) == Npart.end()) {Npart[iebin] = 1;} 
-	else {Npart[iebin]++;}
-
-	G4cout << particleDef->GetParticleName() << " " << iebin << " " << Npart[iebin] << G4endl;
-	//nevents++;
 
 	fParticleGun->SetParticlePosition(pos);
 	fParticleGun->SetParticleMomentumDirection(mom);

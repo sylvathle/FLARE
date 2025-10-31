@@ -177,18 +177,6 @@ void MyGeometry::SetModule(G4double thickness=4*mm)
 		solidModule = new G4Sphere("solidDome3", radiusModule, radiusModule+thickness, 0*deg, 360*deg, 0*deg, 180*deg);
 		logicModule = new G4LogicalVolume(solidModule,materials->GetMaterial("G4_Al"),"logicModule");
 		physModule = new G4PVPlacement(0, G4ThreeVector(0.,0.,0.), logicModule, "physModule", logicWorld, false, 0, true);
-		
-		//static_cast<MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction())->SetBeamRadius(thickness+rsource+0.2*m);
-		//generator->SetBeamRadius(thickness+rsource+0.2*m);
-			
-		/*solidModuleUp = new G4Tubs("solidModuleUp", 0.0*m, radiusModule+thickModule, thickModule/2.0, 0*deg, 360*deg);
-		logicModuleUp = new G4LogicalVolume(solidModuleUp,materials->GetMaterial("G4_Al"),"logicModuleUp");
-		physModuleUp = new G4PVPlacement(0, G4ThreeVector(0.,0.,heightModule+thickModule/2.0), logicModuleUp, "physModuleUp", logicWorld, false, 0, true);
-
-		solidModuleDown = new G4Tubs("solidModuleDown", 0.0*m, radiusModule+thickModule, thickModule/2.0, 0*deg, 360*deg);
-		logicModuleDown = new G4LogicalVolume(solidModuleDown,materials->GetMaterial("G4_Al"),"logicModuleDown");
-		physModuleDown = new G4PVPlacement(0, G4ThreeVector(0.,0.,-heightModule-thickModule/2.0), logicModuleUp, "physModuleDown", logicWorld, false, 0, true);*/
-	
 		logicAir->SetMaterial(materials->GetMaterial("G4_AIR"));
 	}
 }

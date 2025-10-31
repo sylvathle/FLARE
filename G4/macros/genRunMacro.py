@@ -24,12 +24,14 @@ nsim = int(sys.argv[2])
 thicknessModule = int(sys.argv[3])
 #thicknessModule = 4
 
+# 
 particle = sys.argv[4]
 logEmin = sys.argv[5]
 logEmax = sys.argv[6]
 
 innerRadiusModule = 1200
 distSourceModule = 200
+if thicknessModule==0: distSourceModule = 0
 
 radiusSource = thicknessModule + innerRadiusModule + distSourceModule
 
@@ -50,7 +52,7 @@ fmacros.write("/run/initialize\n\n")
 
 if thicknessModule>0:
     fmacros.write("/SIM/scoring/putModule "+str(thicknessModule)+"\n")
-fmacros.write("/SIM/scoring/sampleSize "+str(nsim)+"\n")
+#fmacros.write("/SIM/scoring/sampleSize "+str(nsim)+"\n")
 #fmacros.write("/SIM/scoring/resDir "+"../results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
 fmacros.write("/SIM/scoring/resDir "+"/data/results/"+scenario+"_"+str(thicknessModule)+"_"+particle+"\n")
 fmacros.write("/SIM/scoring/radbeam " + str(radiusSource) + " mm\n\n")
@@ -62,4 +64,3 @@ fmacros.write("/SIM/generate/logmaxkE "+logEmax+"\n\n")
 
 fmacros.write("/run/beamOn "+str(nsim)+"\n")
 
-print (scenario,nsim,thicknessModule)

@@ -98,6 +98,7 @@ for scenario in listdir(res_dir):
 
     df_dose = pd.concat([df_dose,df_grouped])
 
+  if len(df_dose)==0: continue
   var_list = ["DE","AD"]
   df_dose["scenario"] = scenario
   df_all_dose_sample = pd.concat([df_all_dose_sample,df_dose])

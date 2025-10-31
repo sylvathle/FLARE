@@ -86,8 +86,11 @@ void TETRun::RecordEvent(const G4Event* event)
   	
   	//G4int Z = (G4int)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetPDGCharge();
   	G4double A = (G4double)event->GetPrimaryVertex()->GetPrimary()->GetParticleDefinition()->GetBaryonNumber();
+	if (A==0.0) {A=1.0;}
 	G4double energy = event->GetPrimaryVertex()->GetPrimary()->GetKineticEnergy()/A;
-  	G4int energyBin = G4int((log10(energy)-minlogE)/(maxlogE-minlogE)*NbinsE);
+  	G4double double_energyBin = G4double((log10(energy)-minlogE)/(maxlogE-minlogE)*(G4double)NbinsE);
+	G4int energyBin = G4int(double_energyBin);
+	if (double_energyBin<0) {energyBin-=1;}
 	G4double energyBinMin = pow(10,energyBin/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
 	G4double energyBinMax = pow(10,(energyBin+1)/(G4double)NbinsE*(maxlogE-minlogE)+minlogE);
 	G4double ebinsize = energyBinMax - energyBinMin;
