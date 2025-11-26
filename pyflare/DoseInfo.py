@@ -70,7 +70,7 @@ class DoseInfo:
     else:
       self.loadDoses(sampled)
 
-  def loadDoses(self,sampled):
+  def loadDoses(self,sampled,thick=185):
 
     file_organICRP = 'input/organsInfo_ICRP.csv'
     self.df_organs_ICRP = pd.read_csv(file_organICRP)
@@ -79,14 +79,15 @@ class DoseInfo:
     self.df_organs_b2g= pd.read_csv(file_organB2G)
 
     if sampled:
-      file_path = 'input/doses_samples_v2.csv'
+      file_path = 'input/doses_samples.csv'
       list_index = ["i_sample","scenario","thick","particle","E","deltaE","group","WT"] # organId removed
     else: 
-      file_path = 'input/data_dose_v2.csv'
+      file_path = 'input/data_dose.csv'
       list_index = ["scenario","thick","particle","E","deltaE","group","WT"] # organId removed
 
 
     self.df_dat = pd.read_csv(file_path)
+    self.df_dat = self.df_dat[self.df_dat["thick"]==thick]
     self.df_dat["E"] = (self.df_dat["eBin"])/self.Nbins*(self.maxE-self.minE)+self.minE
     self.df_dat["E"] = 10**self.df_dat["E"]
     self.df_dat["deltaE"] = 10**((self.df_dat["eBin"]+1)/self.Nbins*(self.maxE-self.minE)+self.minE)-self.df_dat["E"]
@@ -114,9 +115,9 @@ class DoseInfo:
       
         # Important line correcting the m2 unit for the sphere of generation of protons to cm2
         # It also cancel the angular distribution as it is already multiplied in the band fitted fluxes
-        self.df_dat[c] *= 1e4/(2*np.pi)/4.0
+        self.df_dat[c] *= 1e4
         # Correct multiplication done in simulations by energy bin size, not needed
-        self.df_dat[c] /= self.df_dat["deltaE"] # cm2.mSv/proton
+        #self.df_dat[c] /= self.df_dat["deltaE"] # cm2.mSv/proton
       if "_N" in c:
         self.df_dat.drop(columns=c,inplace=True)
 

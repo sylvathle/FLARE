@@ -42,6 +42,7 @@ def generateGCRDoses():
 
   thick = 185
   d_increment = 183
+  #d_increment = 10
 
   gcr_input_path = 'input/GCR-spectra/'
   gcr_output_path = 'output/GCR/tserie/'
@@ -59,6 +60,7 @@ def generateGCRDoses():
       csv_filename = scenario+"_"+datemin.strftime("%Y%m%d")+"-"+datemax.strftime("%Y%m%d")+".csv"
       filepath = gcr_output_path+csv_filename
 
+
       if os.path.exists(filepath): 
         datemin = datemax
         continue
@@ -67,12 +69,13 @@ def generateGCRDoses():
       if "B2G" not in scenario: continue
       dict_gcr_doses = {"date":[],"organ":[]}
 
+      #print (filepath)
+
       for qqty in list_qqty:
         for stat in list_stat:
           dict_gcr_doses[qqty+stat] = []
 
       for filename in os.listdir(gcr_input_path):
-        print(filename)
         # Extract date from filename (assuming format "gcr_%Y-%m-%d.csv")
         gcr_path_file = gcr_input_path+"/"+filename
         try:
@@ -84,6 +87,8 @@ def generateGCRDoses():
           print(f"  Could not parse date from filename: {filename}")
         if date < datemin: continue
         if date > datemax: continue
+
+        print (csv_filename,filename)
 
         df_gcr = gcr.getGCRFlux(gcr_path_file, dose.listE, dose.listdeltaE ,0)
 
@@ -124,6 +129,8 @@ def generateSPEDoses():
 
   if not os.path.exists("output"): os.makedirs("output")
   if not os.path.exists("output/SPE"): os.makedirs("output/SPE")
+  #if not os.path.exists("output/SPE/tserie"): os.makedirs("output/SPE/tserie")
+  #if not os.path.exists("output/SPE/final_tserie"): os.makedirs("output/SPE/final_tserie")
 
   thick = 185
 
@@ -208,24 +215,35 @@ def generateSPEDoses():
     
 def generateSPE_time_doses():
 
+  if not os.path.exists("output/SPE/tserie"): os.makedirs("output/SPE/tserie")
+
   thick = 185
   d_increment  = 183
 
   dose = di.DoseInfo(True)
+  #dose = di.DoseInfo(False)
   sepem = sp.Sepem()
 
   for scenario in dose.list_scenario:
     #if scenario != "B2G-naked": continue
     for organ in ["all"]+dose.list_organs:
+      #if organ!="bladder": continue
+
       datemin = dt.datetime(1974,7,1,0,0,0,0)
-      #while datemin<dt.datetime(1974,7,13,0,0,0,0):
+      #datemin = dt.datetime(1989,10,20,16,0,0,0)
+      #while datemin<dt.datetime(1989,10,20,16,5,0,0):
       while datemin<dt.datetime(2018,1,1,0,0,0,0):
+        print (datemin)
         datemax = datemin + dt.timedelta(days=d_increment)
+        #datemax = datemin + dt.timedelta(seconds=300)
         filename = scenario+"_"+organ.replace(" ","-")+"_"+datemin.strftime("%Y%m%d")+"-"+datemax.strftime("%Y%m%d")+".csv"
         filepath = "output/SPE/tserie/"+filename
+
+        # To recover
         if os.path.exists(filepath): 
           datemin = datemax
           continue
+
         with open(filepath, 'a'): os.utime(filepath, None)
         df_f2d = dose.getFlux2DoseCoeffs(scenario,thick,organ)
         df_f2d = df_f2d[df_f2d["particle"]=="H"]
@@ -243,13 +261,29 @@ def generateSPE_time_doses():
           list_AD = [0 for i in list_sample]
           list_DE = [0 for i in list_sample]
           list_EDE = [0 for i in list_sample]
+          #df_isample = pd.DataFrame()
           for i_sample in list_sample:
             df_dose_sample = df_f2d[df_f2d["i_sample"]==i_sample]
 
             # [mSv cm2 / p ] * [p . cm-2 . min-1] = mSv / min
+            #print ('\n',i_sample,'\n')
+            #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            #df_isample[i_sample]  = (df_dose_sample["DE"]*df_spe[storm]).cumsum()
+            #print (i_sample)
+            #print (df_dose_sample.columns)
+            #print (df_spe.columns)
+            #print (list_DE)
             list_AD[i_sample] += (df_dose_sample["AD"]*df_spe[storm]).sum() # each data point is for 5 minutes
             list_DE[i_sample] += (df_dose_sample["DE"]*df_spe[storm]).sum() # each data point is for 5 minutes
             if organ=="all": list_EDE[i_sample] += (df_dose_sample["EDE"]*df_spe[storm]).sum() # each data point is for 5 minutes
+
+          #with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+          #      print (df_isample)
+          #print (list_DE)
+
+          #sys.exit()
+
+            
 
           date = dt.datetime.strptime(storm,"%Y%m%d-%H%M")
           dict_time_vals["date"].append(date)
@@ -260,6 +294,8 @@ def generateSPE_time_doses():
           dict_time_vals["AD_t"].append(ad_t)
 
           de,de_b,de_t = calc_stats(list_DE)
+          #print (list_DE)
+          #print (storm,de,de_b,de_t)
           dict_time_vals["DE"].append(de)
           dict_time_vals["DE_b"].append(de_b)
           dict_time_vals["DE_t"].append(de_t)
@@ -296,7 +332,7 @@ def getDoses(datemin,datemax,qqty="DE"):
   ndays_add = 10
 
   df = pd.DataFrame()
-  print (datemin)
+  #print (datemin)
   for organ in list_organs:
     str_organ = organ.replace(" ","-")
     print ("\t",str_organ)
@@ -308,8 +344,8 @@ def getDoses(datemin,datemax,qqty="DE"):
     df_spe_naked.set_index('date',inplace=True)
     df_spe_naked = df_spe_naked.drop_duplicates()
     df_spe_naked = df_spe_naked.dropna()
-    print (df)
-    print (df_spe_naked)
+    #print (df)
+    #print (df_spe_naked)
     for stat in list_stat: df["SPE_naked_"+str_organ+stat] = df_spe_naked[qqty+stat]
   
     file_path = 'output/SPE/final_tserie/B2G-vest_'+str_organ+'.csv'
@@ -349,18 +385,17 @@ def getDoses(datemin,datemax,qqty="DE"):
   df.to_csv(filepath)
      
      
-#datemin = dt.datetime(1989,7,1,0,0,0,0)
-#datemax = dt.datetime(1989,8,1,0,0,0,0)
 generateSPE_time_doses()
 generateGCRDoses()
 
-#sys.exit()
+sys.exit()
 
-thick = 185
+#thick = 185
 #organ = sys.argv[1]
 #datemin = dt.datetime.strptime(sys.argv[2],"%Y%m%d")
 #datemax = dt.datetime.strptime(sys.argv[3],"%Y%m%d")
 
+# RUN CONCAT
 
 t1 = time.time()
 

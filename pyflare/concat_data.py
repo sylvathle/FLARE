@@ -1,11 +1,13 @@
 import pandas as pd
 import datetime
+import os
 from os import listdir
 from os.path import isfile, join
 
 
 def concat_spe_tserie():
   directory = "output/SPE/tserie/"
+  if not os.path.exists("output/SPE/final_tserie"): os.makedirs("output/SPE/final_tserie")
   #list_files = [f for f in listdir(directory) if isfile(join(directory, f))]
   
   #print (list_files)
@@ -34,6 +36,7 @@ def concat_spe_tserie():
 
 def concat_gcr_tserie():
   directory = "output/GCR/tserie/"
+  if not os.path.exists("output/GCR/final_tserie"): os.makedirs("output/GCR/final_tserie")
   #list_files = [f for f in listdir(directory) if isfile(join(directory, f))]
   
   #print (list_files)

@@ -94,6 +94,7 @@ def gcrDose(df_gcr,df_coeffs):
     for isample in list_sample:
       df_coeff_sample = df_coeff_particle[df_coeff_particle["i_sample"]==isample]
       ## p / [cm2.min] * cm2.mSv/p
+      #print (df_gcr)
       list_vals_AD[isample] += float((df_gcr[particle]*df_coeff_sample["AD"]).sum())
       list_vals_DE[isample] += float((df_gcr[particle]*df_coeff_sample["DE"]).sum())
       if "EDE" in df_coeff_sample.columns: list_vals_EDE[isample] += float((df_gcr[particle]*df_coeff_sample["EDE"]).sum())

@@ -53,10 +53,13 @@ df_all_dose_sample = pd.DataFrame()
 #i_sample = -1
 
 for scenario in listdir(res_dir):
+  #if "vest_185_H" not in scenario: continue
+  #if "vest_185_He" in scenario: continue
+
   scenario_dir = res_dir + scenario + "/"
 
   list_prefix = [scenario_dir+f.split("_")[0]+"_nt_" for f in listdir(scenario_dir) if isfile(join(scenario_dir, f)) and "Dose" in f]
-  print (list_prefix)
+  #print (list_prefix)
 
   N_av = 5
   list_av_df_doses = [pd.DataFrame() for i in range(N_av)]
@@ -66,11 +69,14 @@ for scenario in listdir(res_dir):
     try: 
       cols_dose = extract_column_names(f+"Doses.csv")
       df_dose = pd.read_csv(f+"Doses.csv",names=cols_dose,skiprows=len(cols_dose)+4)
+      #if min(df_dose["eBin"])>10: continue
+      #print (df_dose[(df_dose["eBin"]==9) & (df_dose["organId"]==12201)])
     except: continue
     try: 
       cols_N = extract_column_names(f+"N.csv") 
       df_N = pd.read_csv(f+"N.csv",names=cols_N,skiprows=len(cols_N)+4)
     except: continue
+    #print (f)
 
     if len(df_dose)==0 or len(df_N)==0: continue
   
