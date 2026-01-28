@@ -1,6 +1,7 @@
 # FLARE
 
 Code for Fluence-to-Dose calculation of ICRP145 shielded with aluminium shell.
+Includes ICRP145 re-exported to be simulated with/without the FLARE vest.
 
 Contact point: sylvain.blunier@gmail.com
 
@@ -20,7 +21,7 @@ export PHANTOM_PATH=geant4dir/examples/advanced/ICRP145_HumanPhantoms/build/ICRP
 After cloning the project, the usual Geant4 C++ commands must be run:
 
 ```
-cd FLARE
+cd FLARE/G4
 mkdir build
 cd build
 cmake ..
@@ -28,23 +29,25 @@ make -j8
 ```
 
 ### Generate macros
-
 Macros are generated with a python3 script in the macros folder:
 
 ```
 cd ../macros
-python3 genRunMacros.py scenario nsim thickness
+python3 genRunMacros.py scenario nsim thickness particle logEmin logEmax
 ```
 
-- *scenario*: string, takes only the value 'ICRP-naked' for now but it will evolve in a future version of the code.
-- *nsim*: integer, corresponds de the number protons to be simulated
+- *scenario*: string, takes the value 'ICRP-naked' to use the original mesh-type ICRP145 human phantom, "B2G-vest" or "B2G-naked" to use the newly exported human phantom with or without the vest
+- *nsim*: integer, corresponds to the number of particles to be simulated
 - *thickness*: float, corresponds to the thickness of the aluminum shell in millimeters
+- *particle*: particle to be used (H to Ni, e+/e-, pi+/pi-, deuteron, gamma, neutron)
+- *logEmin*: logarithm base 10 of the minimum energy to be used in MeV (e.g. -1 would mean 0.1 MeV)
+- *logEmax*: logarithm base 10 of the maximum energy to be used in MeV (e.g. 3 would mean 1 GeV)
 
 A file *run_*scenario*_*thickness*.mac* will be created.
 
 example:
 ```
-python3 genRunMacros.py ICRP-naked 100 100
+python3 genRunMacros.py ICRP-naked 100 100 neutron -9 5
 ```
 
 ### First run
@@ -59,7 +62,7 @@ Each run creates 5 files with pattern YYYYMMDD-HHmmss-XXXXXXX\_nt\_Dose.csv, whe
 
 ### Macros commands
 
-The macros should work with the usual macro commands plus some that have been defined for the simulation of a human phantom in an alumium shell (see test.mac in the inputs folder as example).
+The macros should work with the usual macro commands plus some that have been defined for the simulation of a human phantom in an aluminium shell (see test.mac in the inputs folder as an example).
 
 
 ```
@@ -94,7 +97,7 @@ radius stands for the radius of the hemisphere from where primaries are generate
 ## Analysis
 
 This sections assumes the geant4 simulations ran following a specific way of naming the folders containing the csv files.
-The data has been resumes and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
+The data has been resumed and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
 
 A folder called figures must be created at the same level than the analysis folder (outside the analysis folder).
 

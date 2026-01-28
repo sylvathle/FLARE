@@ -40,7 +40,6 @@ ISPSEnergyDeposit::ISPSEnergyDeposit(G4String name)
 	//particleList = generator->GetParticleList();
 }
 
-
 void ISPSEnergyDeposit::Initialize(G4HCofThisEvent* HCE)
 {
 	EDEMap = new G4THitsMap<HitInfo>(GetMultiFunctionalDetector()->GetName(), 				GetName());
@@ -64,8 +63,8 @@ G4bool ISPSEnergyDeposit::ProcessHits(G4Step* aStep,G4TouchableHistory *history)
 	G4double total_edep = aStep->GetTotalEnergyDeposit();
 
 
-	//G4cout << "AQUI" << G4endl;	
 	if ( total_edep == 0. ) return FALSE;
+
 
 	G4double nonion_edep=aStep->GetNonIonizingEnergyDeposit();
 	G4double dl=aStep->GetDeltaPosition().mag();

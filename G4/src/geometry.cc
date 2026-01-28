@@ -123,9 +123,9 @@ G4VPhysicalVolume *MyGeometry::Construct()
 	}
 	else if (phantomType=="IcruSphere")
 	{
-		solidPhantom = new G4Sphere("solidPhantom", 0., rPhantom, 0, 360*deg, 0, 180*deg);
+		solidPhantom = new G4Sphere("solidPhantom", 0., 0.15*m, 0, 360*deg, 0, 180*deg);
 		logicPhantom = new G4LogicalVolume(solidPhantom, materials->GetMaterial("IcruMat"), "logicPhantom");
-		physPhantom = new G4PVPlacement(0, G4ThreeVector(0.,0.*m,0.), logicPhantom, "physPhantom", logicWorld, false, 0, true);
+		physPhantom = new G4PVPlacement(0, G4ThreeVector(0.,0.*m,0.), logicPhantom, "physPhantom", logicAir, false, 0, true);
 	}
 	
 	return physWorld;
@@ -159,8 +159,6 @@ void MyGeometry::ConstructSDandField()
 		SetSensitiveDetector(logicPhantom, MFDet);
 	}
 
-	G4cout << "ConstructSDandField" << G4endl;
-
 	G4MultiFunctionalDetector* myScorer = new G4MultiFunctionalDetector("myCellScorer");
 	G4SDManager::GetSDMpointer()->AddNewDetector(myScorer);
 	G4VPrimitiveScorer* totalSurfFlux = new SBG4PSSphereSurfaceFlux("TotalSurfFlux",0);
@@ -176,22 +174,9 @@ void MyGeometry::SetModule(G4double thickness=4*mm)
 	thickModule = thickness;
 	if (thickness>0.1*mm)
 	{
-		G4cout << "Module thickness = " << thickness << G4endl;
 		solidModule = new G4Sphere("solidDome3", radiusModule, radiusModule+thickness, 0*deg, 360*deg, 0*deg, 180*deg);
 		logicModule = new G4LogicalVolume(solidModule,materials->GetMaterial("G4_Al"),"logicModule");
 		physModule = new G4PVPlacement(0, G4ThreeVector(0.,0.,0.), logicModule, "physModule", logicWorld, false, 0, true);
-		
-		//static_cast<MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction())->SetBeamRadius(thickness+rsource+0.2*m);
-		//generator->SetBeamRadius(thickness+rsource+0.2*m);
-			
-		/*solidModuleUp = new G4Tubs("solidModuleUp", 0.0*m, radiusModule+thickModule, thickModule/2.0, 0*deg, 360*deg);
-		logicModuleUp = new G4LogicalVolume(solidModuleUp,materials->GetMaterial("G4_Al"),"logicModuleUp");
-		physModuleUp = new G4PVPlacement(0, G4ThreeVector(0.,0.,heightModule+thickModule/2.0), logicModuleUp, "physModuleUp", logicWorld, false, 0, true);
-
-		solidModuleDown = new G4Tubs("solidModuleDown", 0.0*m, radiusModule+thickModule, thickModule/2.0, 0*deg, 360*deg);
-		logicModuleDown = new G4LogicalVolume(solidModuleDown,materials->GetMaterial("G4_Al"),"logicModuleDown");
-		physModuleDown = new G4PVPlacement(0, G4ThreeVector(0.,0.,-heightModule-thickModule/2.0), logicModuleUp, "physModuleDown", logicWorld, false, 0, true);*/
-	
 		logicAir->SetMaterial(materials->GetMaterial("G4_AIR"));
 	}
 }

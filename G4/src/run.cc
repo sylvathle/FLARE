@@ -46,7 +46,6 @@ G4Run* MyRunAction::GenerateRun()
 	
 	phantomType = detectorConstruction->GetPhantomType();
 	//SetResultsDirectory("/results/"+phantomType+G4String("/"));
-	G4cout << "GenerateRun " << phantomType << G4endl;
 	if ((phantomType=="ICRP145") || (phantomType=="BDRTOG4")) 
 	{	
 		fRun = new TETRun();
@@ -81,7 +80,6 @@ void MyRunAction::IterIncident(G4double ikE)
 
 void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 {
-	G4cout << "Begin run action" << G4endl;
 	auto man = G4AnalysisManager::Instance();
 	
 	const MyGeometry *detectorConstruction = static_cast<const MyGeometry*> (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
@@ -94,35 +92,36 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 		auto massMap = fTetData->GetMassMap();
 	}
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
-	std::vector<G4String> particleList;
+	//std::vector<G4String> particleList;
 
-	for (G4int i=0;i<generator->GetNIons();i++) 
-	{
+	//for (G4int i=0;i<generator->GetNIons();i++) 
+	//{
 		//G4cout << i << " " << generator->GetIonName(i) << G4endl;
-		particleList.push_back(generator->GetIonName(i));
-	}
+	//	particleList.push_back(generator->GetIonName(i));
+	//}
+	G4String primaryParticle = generator->GetIonName();
 
 
 	man->CreateNtuple("Doses","Doses");
-	//man->CreateNtupleIColumn("idEvent");
 	man->CreateNtupleIColumn("organId");
 	man->CreateNtupleIColumn("eBin");
-	for (int i=0;i<particleList.size();i++)
-	{
-		//G4cout << i << " " << particleList[i] << G4endl;
-		man->CreateNtupleIColumn(particleList[i]+G4String("_N"));
-		man->CreateNtupleDColumn(particleList[i]+G4String("_DE"));
-		man->CreateNtupleDColumn(particleList[i]+G4String("_AD"));
-		//break;
-	}
+	//man->CreateNtupleIColumn(G4String("N"));
+	man->CreateNtupleDColumn(G4String("DE"));
+	man->CreateNtupleDColumn(G4String("AD"));
 	man->FinishNtuple(0);
 
-        man->CreateNtuple("InnerFlux","InnerFlux");
+
+        /*man->CreateNtuple("InnerFlux","InnerFlux");
         man->CreateNtupleIColumn("ikE");
         man->CreateNtupleSColumn("Oparticle");
         man->CreateNtupleDColumn("okE");
         man->CreateNtupleDColumn("count");
-        man->FinishNtuple(1);
+        man->FinishNtuple(1);*/
+
+	man->CreateNtuple("N","N");
+	man->CreateNtupleIColumn("ikE");
+	man->CreateNtupleIColumn("N");
+	man->FinishNtuple(1);
 	
 	if ((phantomType=="ICRP145") || (phantomType=="BDRTOG4")) {
 		// print the progress at the interval of 10%
@@ -130,51 +129,25 @@ void MyRunAction::BeginOfRunAction(const G4Run* aRun)
 		G4RunManager::GetRunManager()->SetPrintProgress(int(fNumOfEvent*0.1));
 	}
 	
-	G4cout << "Run created" << G4endl;
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* aRun)
 {
 
 
+	G4cout << "EndOfRunAction" << G4endl;
 	const MyPrimaryGenerator *generator = static_cast<const MyPrimaryGenerator*>(G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction());
 	
 	auto man = G4AnalysisManager::Instance();
 
-	std::map<G4int, TotalFlux>::iterator itF;
 
-	std::map<G4String,Ion> Ions = getIons();
-
-        // Record fluxes
-        for (itF = flux.begin(); itF != flux.end(); itF++)
-        {
-                G4int ikE = itF->first;
-                G4String oParticle;
-                //G4int iZ = Ions[iParticle].getZ();
-		G4int iZ = 1;
-
-                //man->FillNtupleSColumn(4,0,iParticle);
-                //man->FillNtupleIColumn(4,1,iZ);
-                //man->FillNtupleDColumn(4,2,generator->GetTotalParticleNumber(iZ-1));
-                //man->AddNtupleRow(4);
-
-                std::map<G4String,ParticleSpectra> ofluxes = itF->second.GetFluxes();
-                std::map<G4String,ParticleSpectra>::iterator itoF;
-
-                for (itoF = ofluxes.begin(); itoF != ofluxes.end();itoF++)
-                {
-                        oParticle = itoF->first;
-                        for (G4int oebin=0; oebin<itoF->second.GetNbin();oebin++)
-                        {
-                                man->FillNtupleIColumn(1,0,ikE);
-                                man->FillNtupleSColumn(1,1,oParticle);
-                                man->FillNtupleDColumn(1,2,oebin);
-                                man->FillNtupleDColumn(1,3,itoF->second.GetBin(oebin));
-                                man->AddNtupleRow(1);
-                        }
-                }
-
-        }
+	//std::map<G4int,G4int> Npart = generator->GetNGenerated();
+	for (const auto &[key, value]: generator->GetNGenerated())
+	{
+		man->FillNtupleIColumn(1,0,key);
+		man->FillNtupleIColumn(1,1,value);
+		man->AddNtupleRow(1);
+	}
 
 	man->Write();
 	man->CloseFile();
@@ -193,7 +166,6 @@ void MyRunAction::SetResultsDirectory(G4String dir)
 	
 	phantomType = detectorConstruction->GetPhantomType();
 	auto man = G4AnalysisManager::Instance();
-	G4cout << "Set Dir Phantom " << phantomType << " " << dir << G4endl;
 	//result_dir = "../results/"+phantomType+G4String("/")+dir+G4String("/");
 	result_dir = dir+G4String("/");
 	//G4cout << result_dir << G4endl;
