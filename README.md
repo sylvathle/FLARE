@@ -1,6 +1,7 @@
 # FLARE
 
 Code for Fluence-to-Dose calculation of ICRP145 shielded with aluminium shell.
+Includes ICRP145 re-exported to be simulated with/without the FLARE vest.
 
 Contact point: sylvain.blunier@gmail.com
 
@@ -20,7 +21,7 @@ export PHANTOM_PATH=geant4dir/examples/advanced/ICRP145_HumanPhantoms/build/ICRP
 After cloning the project, the usual Geant4 C++ commands must be run:
 
 ```
-cd FLARE
+cd FLARE/G4
 mkdir build
 cd build
 cmake ..
