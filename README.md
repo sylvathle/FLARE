@@ -29,24 +29,6 @@ make -j8
 ```
 
 ### Generate macros
-scenario = sys.argv[1]
-#scenario = "ICRP-naked"
-
-if "ICRP" in scenario: phantom = "ICRP145"
-else: phantom = "BDRTOG4"
-
-
-nsim = int(sys.argv[2])
-#nsim = randrange(100000)
-
-thicknessModule = int(sys.argv[3])
-#thicknessModule = 4
-
-# 
-particle = sys.argv[4]
-logEmin = sys.argv[5]
-logEmax = sys.argv[6]
-
 Macros are generated with a python3 script in the macros folder:
 
 ```
