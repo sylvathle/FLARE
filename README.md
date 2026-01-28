@@ -29,6 +29,23 @@ make -j8
 ```
 
 ### Generate macros
+scenario = sys.argv[1]
+#scenario = "ICRP-naked"
+
+if "ICRP" in scenario: phantom = "ICRP145"
+else: phantom = "BDRTOG4"
+
+
+nsim = int(sys.argv[2])
+#nsim = randrange(100000)
+
+thicknessModule = int(sys.argv[3])
+#thicknessModule = 4
+
+# 
+particle = sys.argv[4]
+logEmin = sys.argv[5]
+logEmax = sys.argv[6]
 
 Macros are generated with a python3 script in the macros folder:
 
@@ -37,15 +54,18 @@ cd ../macros
 python3 genRunMacros.py scenario nsim thickness
 ```
 
-- *scenario*: string, takes only the value 'ICRP-naked' for now but it will evolve in a future version of the code.
-- *nsim*: integer, corresponds de the number protons to be simulated
+- *scenario*: string, takes the value 'ICRP-naked' to use the original mesh-type ICRP145 human phantom, "B2G-vest" or "B2G-naked" to use the newly exported human phantom with or without the vest
+- *nsim*: integer, corresponds to the number of particles to be simulated
 - *thickness*: float, corresponds to the thickness of the aluminum shell in millimeters
+- *particle*: particle to be used (H to Ni, e+/e-, pi+/pi-, deuteron, gamma, neutron)
+- *logEmin*: logarithm base 10 of the minimum energy to be used in MeV (e.g. -1 would mean 0.1 MeV)
+- *logEmax*: logarithm base 10 of the maximum energy to be used in MeV (e.g. 3 would mean 1 GeV)
 
 A file *run_*scenario*_*thickness*.mac* will be created.
 
 example:
 ```
-python3 genRunMacros.py ICRP-naked 100 100
+python3 genRunMacros.py ICRP-naked 100 100 neutron -9 5
 ```
 
 ### First run
@@ -60,7 +80,7 @@ Each run creates 5 files with pattern YYYYMMDD-HHmmss-XXXXXXX\_nt\_Dose.csv, whe
 
 ### Macros commands
 
-The macros should work with the usual macro commands plus some that have been defined for the simulation of a human phantom in an alumium shell (see test.mac in the inputs folder as example).
+The macros should work with the usual macro commands plus some that have been defined for the simulation of a human phantom in an aluminium shell (see test.mac in the inputs folder as an example).
 
 
 ```
