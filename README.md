@@ -33,7 +33,7 @@ Macros are generated with a python3 script in the macros folder:
 
 ```
 cd ../macros
-python3 genRunMacros.py scenario nsim thickness
+python3 genRunMacros.py scenario nsim thickness particle logEmin logEmax
 ```
 
 - *scenario*: string, takes the value 'ICRP-naked' to use the original mesh-type ICRP145 human phantom, "B2G-vest" or "B2G-naked" to use the newly exported human phantom with or without the vest
@@ -97,7 +97,7 @@ radius stands for the radius of the hemisphere from where primaries are generate
 ## Analysis
 
 This sections assumes the geant4 simulations ran following a specific way of naming the folders containing the csv files.
-The data has been resumes and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
+The data has been resumed and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
 
 A folder called figures must be created at the same level than the analysis folder (outside the analysis folder).
 
