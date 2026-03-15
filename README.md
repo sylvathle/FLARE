@@ -7,20 +7,20 @@ Contact point: sylvain.blunier@gmail.com
 
 ## Folder structure
 
-###G4
+1- G4
 The most interesting is likely G4/, containing the C++ source for the scene, including the human phantom.
 How to use it is explained in the following section.
 
-###ICRP145_BlenderToG4
+2- ICRP145_BlenderToG4
 ICRP145_BlenderToG4 contains the Python code to be executed inside the Blender environment with the ICRP145 + vest previously loaded. 
 This series of codes exports ICRP145 to the poly file format, following the volume structure defined in list_objs_names.py.
 This code has not been tested outside its original environment. To be used, you first need the ICRP145 + vest, and some paths need to be adjusted.
 To use it without the vest, the CAD model provided by ICRP can be loaded, and little modifications are needed to remove references to the vest in the code.
 
-###SEP_spectra
-This folder contains Python scripts that allow the retrieval of the Band parameters of the SEPs from different sources.
+3- SEP_spectra
+This folder contains Python scripts that retrieve the Band parameters of SEPs from different sources.
 
-###pyflare
+4- pyflare
 This folder contains Python scripts that convert Geant4-produced data into flux-to-dose coefficients and compute dose quantities from particle spectra.
 It wasn't tested outside its original working environment.
 
