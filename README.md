@@ -15,7 +15,7 @@ How to use it is explained in the following section.
 ICRP145_BlenderToG4 contains the Python code to be executed inside the Blender environment with the ICRP145 + vest previously loaded. 
 This series of codes exports ICRP145 to the poly file format, following the volume structure defined in list_objs_names.py.
 This code has not been tested outside its original environment. To be used, you first need the ICRP145 + vest, and some paths need to be adjusted.
-To use it without the vest, the CAD model provided by ICRP can be loaded, and little modifications are needed to remove references to the vest in the code.
+To use it without the vest, the CAD model provided by ICRP can be loaded, and a few modifications are needed to remove vest-related references from the code.
 
 3- *SEP_spectra*
 This folder contains Python scripts that retrieve the Band parameters of SEPs from different sources.
@@ -71,8 +71,9 @@ Define the location of the CSV file that specifies the organs/parts to be includ
 ```
 /SIM/scoring/csvBodies ../scene/organsAndVest.csv
 ```
-There is an example, bodiesAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly. In the current folder ../scene is hard coded so the files containing the tetrahedrons of each organs (.body) should be in this folder. You must then create a folder G4/scene and copy all the files of ICRP145_vest available in the [dataset](https://zenodo.org/records/19456639) on zenodo.
-If the original phantom is used, there is no need to call this line (will be ignored).
+There is an example, bodiesAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly. 
+In the current state of the project,../scene is hard-coded, so the files containing the tetrahedrons of each organ (.body) should be in this folder. You must then create a folder G4/scene and copy all the files of ICRP145_vest available in the [dataset](https://zenodo.org/records/19456639) on Zenodo.
+If the original phantom from the Geant4 examples is used, there is no need to call this line (it will be ignored); however, the environment variable PHANTOM_PATH needs to be defined and point to the folder examples/advanced/ICRP145_HumanPhantoms/build/ICRP145data/ of your Geant4 installation.
 
 
 Define the human phantom to be simulated
