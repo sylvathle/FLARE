@@ -69,9 +69,9 @@ The macros should work with the usual macro commands, plus some that have been d
 
 Define the location of the CSV file that specifies the organs/parts to be included in the scene. 
 ```
-/SIM/scoring/csvBodies ../scene/bodiesAndVest.csv
+/SIM/scoring/csvBodies ../scene/organsAndVest.csv
 ```
-There is an example, bodiesAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly.
+There is an example, bodiesAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly. In the current folder ../scene is hard coded so the files containing the tetrahedrons of each organs (.body) should be in this folder. You must then create a folder G4/scene and copy all the files of ICRP145_vest available in the [dataset](https://zenodo.org/records/19456639) on zenodo.
 If the original phantom is used, there is no need to call this line (will be ignored).
 
 
