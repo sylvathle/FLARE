@@ -42,9 +42,9 @@ fmacros.write("/run/verbose 0\n")
 
 if phantom=="BDRTOG4":
   if "vest" in scenario:
-    fmacros.write("/SIM/scoring/csvBodies ../scripts/bodiesAndVest.csv\n")
+    fmacros.write("/SIM/scoring/csvBodies ../scene/organsAndVest.csv\n")
   else:
-    fmacros.write("/SIM/scoring/csvBodies ../scripts/bodiesOnly.csv\n")
+    fmacros.write("/SIM/scoring/csvBodies ../scene/organsOnly.csv\n")
 
 fmacros.write("/SIM/scoring/phantom "+phantom+"\n\n")
 
@@ -54,7 +54,7 @@ if thicknessModule>0:
     fmacros.write("/SIM/scoring/putModule "+str(thicknessModule)+"\n")
 #fmacros.write("/SIM/scoring/sampleSize "+str(nsim)+"\n")
 #fmacros.write("/SIM/scoring/resDir "+"../results/"+phantom+"/"+scenario+"_"+str(thicknessModule)+"\n")
-fmacros.write("/SIM/scoring/resDir "+"/data/results/"+scenario+"_"+str(thicknessModule)+"_"+particle+"\n")
+fmacros.write("/SIM/scoring/resDir "+"results/"+scenario+"_"+str(thicknessModule)+"_"+particle+"\n")
 fmacros.write("/SIM/scoring/radbeam " + str(radiusSource) + " mm\n\n")
 
 fmacros.write("/SIM/generate/particle " +particle+"\n")

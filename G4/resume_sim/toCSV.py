@@ -42,7 +42,7 @@ def get_stats(group,vars_list):
     
 
 #res_dir = "../results/IcruSphere/rego30/"
-res_dir = "/data/results/"
+res_dir = "../build/results/"
 if len(sys.argv)>1: res_dir = sys.argv[1]
 print (res_dir)
 
@@ -112,7 +112,7 @@ for scenario in listdir(res_dir):
   df_all_dose = pd.concat([df_all_dose,df_dose_av])
 
 df_all_dose_sample.reset_index(inplace=True)
-print (df_all_dose_sample)
+#print (df_all_dose_sample)
 df_all_dose_sample[['scenario', 'thick', 'particle']] = df_all_dose_sample['scenario'].str.split('_', expand=True)
 df_all_dose_sample = df_all_dose_sample[["scenario", "thick", "particle", "organId","i_sample","eBin","N","DE","AD"]]
 df_all_dose_sample.to_csv("doses_samples.csv",index=False)
