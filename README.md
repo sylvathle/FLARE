@@ -53,15 +53,6 @@ cmake ..
 make -j8
 ```
 
-### First run
-For a first test, you can use the test macro available in G4/: 
-```
-cd ../build
-./sim test.mac
-```
-If everything runs fine, a folder called "results/ICRP145/scenario_thickness/" should be created, where CSV files containing the results are created.
-Each run creates 5 files with the pattern YYYYMMDD-HHmmss-XXXXXXX\_nt\_Dose.csv, where XXXXXXX is a random string of numbers. Each file contains the absorbed dose (proton_AD) and Dose equivalent (proton_DE) for each organ and each primary energy bin.
-
 ### Macros commands
 
 The macros should work with the usual macro commands, plus some that have been defined for simulating a human phantom in an aluminum shell.
@@ -136,48 +127,39 @@ python3 genRunMacro.py scenario nsim thickness particle logEmin logEmax
 - *logEmin*: logarithm base 10 of the minimum energy to be used in MeV (e.g., -1 would mean 0.1 MeV)
 - *logEmax*: logarithm base 10 of the maximum energy to be used in MeV (e.g., 3 would mean 1 GeV)
 
-A file *run_*scenario*_*thickness*.mac* will be created.
+A file *run_*scenario*_*thickness*_*particle*.mac* will be created.
 
-example:
+
+### First run
+For a first quick test (assuming all the data about phantoms is correctly setup as described above), you can run:
 ```
-python3 genRunMacro.py BDRTOG4 100 100 neutron -9 5
+cd ../macros
+python3 genRunMacro.py B2G-vest 100 4 proton 1 5
+cd ../build
+./sim macro.mac
 ```
+This creates a macro placing the phantom with the vest in a 4 mm shell, prepare to shoot 100 proton with an energy that is logaritmically selected between 1 MeV and 100 GeV. 
+
+If everything runs fine, the folders "results/B2G-vest_4_proton should be created in build, where CSV files containing the results are created.
 
 
-## Analysis
+### Resume simulation
 
-This section assumes the Geant4 simulations were run using a specific folder-naming convention for the CSV files as defined in the macro files
-The data has been resumed and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
-
-A folder named figures must be created at the same level as the analysis folder (outside it).
-
-```
-cd FLARE
-cd analysis
-```
-
-The file https://zenodo.org/records/14622711/files/organsInfo.csv is needed and must be placed in the analysis folder.
+This section assumes the Geant4 simulations were run using a specific folder-naming convention for the CSV files as defined in the macro files: (results/scenario_thickness_particle)
 
 ```
-wget https://zenodo.org/records/14622711/files/organsInfo.csv
-```
-
-The analysis related to dose calculations is run with:
-
-```
-python3 plotAnalysis.py
+cd G4/resume_sim
+python3 toCSV.py path_to_results
 ```
 
 A file *dose_data.csv* is created with the following columns:
-
-- scenario: as defined above (ICRP-naked)
+- scenario: as defined above (ICRP-naked, B2G-vest...)
 - thick: Thickness of the spherical spacecraft given in mm, density is taken to 2.710 g.cm-2
+- particle: proton, deuteron, Fe56...
+- organId: identify the organ that was hit; detailed organId: https://zenodo.org/api/records/16780309/draft/files/organsInfo_IFHP.csv/content
 - eBin: primary energy bin number
-- organId: organId as defined by ICRP: https://www.icrp.org/publication.asp?id=ICRP%20Publication%20145
-- group: Organ group following organsInfo.csv
-- WT: weithing tissue factor
-- mass[g]: mass of organ
-- proton_N: number of simulated proton for the corresponding eBin
-- proton_AD,proton_AD_b,proton_AD_t: Absorbed dose (AD) (mGy.cm2/proton) multiplied by the surface of the simulated source per simulated proton in the corresponding energy bin and organ, the _b and _t subscripts indicate the bottom and top standard deviations
-- proton_DE,proton_DE_b,proton_DE_t: Dose equivalent (DE) (mSv.cm2/proton) multiplied by the surface of the simulated source per simulated proton in the corresponding energy bin and organ, the _b and _t subscripts indicate the bottom and top standard deviations.
+- DE: Averaged dose equivalent per particle in the corresponding bin (mSv/particle)
+- DE_b and DE_t: asymmetric bottom and top standard deviation of DE for the entire simulation
+- AD: Averaged absorbed dose per particle in the corresponding bin (mGy/particle)
+- AD_b and AD_t: asymmetric bottom and top standard deviation of AD for the entire simulation
 
