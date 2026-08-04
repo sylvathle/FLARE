@@ -1,6 +1,6 @@
 # FLARE
 
-Code for Fluence-to-Dose calculation of ICRP145 shielded with an aluminium shell.
+Code for Fluence-to-Dose calculation of ICRP145 shielded with an aluminum shell.
 Includes ICRP145 re-exported to be simulated with/without the FLARE vest.
 
 Contact point: sylvain.blunier@gmail.com
@@ -12,8 +12,8 @@ The most interesting is likely G4/, containing the C++ source for the scene, inc
 How to use it is explained in the following section.
 
 2- *ICRP145_BlenderToG4*
-ICRP145_BlenderToG4 contains the Python code to be executed inside the Blender environment with the ICRP145 + vest previously loaded. 
-This series of codes exports ICRP145 to the poly file format, following the volume structure defined in list_objs_names.py.
+ICRP145_BlenderToG4 contains the Python code to be executed inside the Blender environment with the ICRP145 + vest CAD model previously loaded. The model can be downloaded from [Zenodo](10.5281/zenodo.16780309)(https://zenodo.org/api/records/19456639/draft/files/CAD_ICRP145withVest.zip/content)
+These scripts export the ICRP145 to the poly file format, following the volume structure defined in list_objs_names.py.
 This code has not been tested outside its original environment. To be used, you first need the ICRP145 + vest, and some paths need to be adjusted.
 To use it without the vest, the CAD model provided by ICRP can be loaded, and a few modifications are needed to remove vest-related references from the code.
 
@@ -38,7 +38,7 @@ export PHANTOM_PATH=geant4dir/examples/advanced/ICRP145_HumanPhantoms/build/ICRP
 ```
 
 With the newly exported ICRP145:
-The information of the ICRP145+vest is available on [Zenodo](10.5281/zenodo.16780309) under the compressed folder 	
+The .body files (list of tetrahedra that constitute each organ) of the ICRP145+vest are available on [Zenodo](10.5281/zenodo.16780309) under the compressed folder 	
 [ICRP145_vest](https://zenodo.org/api/records/16780309/draft/files/ICRP145_vest.tar.gz/content).
 The folder should be uncompressed and copied into the G4/ folder as "scene", or update the route to its new location in the file G4/src/TETModelImport.cc.
 
@@ -60,19 +60,19 @@ cd ../build
 ./sim test.mac
 ```
 If everything runs fine, a folder called "results/ICRP145/scenario_thickness/" should be created, where CSV files containing the results are created.
-Each run creates 5 files with pattern YYYYMMDD-HHmmss-XXXXXXX\_nt\_Dose.csv, where XXXXXXX is a random string of numbers. Each file contains the absorbed dose (proton_AD) and Dose equivalent (proton_DE) for each organ, and each primary energy bin.
+Each run creates 5 files with the pattern YYYYMMDD-HHmmss-XXXXXXX\_nt\_Dose.csv, where XXXXXXX is a random string of numbers. Each file contains the absorbed dose (proton_AD) and Dose equivalent (proton_DE) for each organ and each primary energy bin.
 
 ### Macros commands
 
-The macros should work with the usual macro commands, plus some that have been defined for simulating a human phantom in an aluminium shell.
+The macros should work with the usual macro commands, plus some that have been defined for simulating a human phantom in an aluminum shell.
 
 
 Define the location of the CSV file that specifies the organs/parts to be included in the scene. 
 ```
 /SIM/scoring/csvBodies ../scene/organsAndVest.csv
 ```
-There is an example, bodiesAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly. 
-In the current state of the project,../scene is hard-coded, so the files containing the tetrahedrons of each organ (.body) should be in this folder. You must then create a folder G4/scene and copy all the files of ICRP145_vest available in the [dataset](https://zenodo.org/records/19456639) on Zenodo.
+There is an example, organsAndVest.csv, in the ICRP145_vest (or the scene folder) that can be targeted directly. 
+In the current state of the project,../scene is hard-coded, so the files containing the tetrahedra of each organ (.body) should be in this folder. You must then create a folder G4/scene and copy all the files of ICRP145_vest available in the [dataset](https://zenodo.org/records/19456639) on Zenodo.
 If the original phantom from the Geant4 examples is used, there is no need to call this line (it will be ignored); however, the environment variable PHANTOM_PATH needs to be defined and point to the folder examples/advanced/ICRP145_HumanPhantoms/build/ICRP145data/ of your Geant4 installation.
 
 
@@ -95,7 +95,7 @@ Indicate the directory where the results should be stored:
 /SIM/scoring/resDir dest_folder
 ```
 
-Sphere from where the source will be generated.
+Sphere from which the source will be generated.
 ```
 /SIM/scoring/radbeam 1500 mm
 ```
@@ -146,7 +146,7 @@ python3 genRunMacro.py BDRTOG4 100 100 neutron -9 5
 
 ## Analysis
 
-This section assumes the Geant4 simulations were run using a specific folder-naming convention for the CSV files.
+This section assumes the Geant4 simulations were run using a specific folder-naming convention for the CSV files as defined in the macro files
 The data has been resumed and shared at https://doi.org/10.5281/zenodo.16036474, they can be downloaded and moved to a data folder inside the analysis folder to run the analysis.
 
 A folder named figures must be created at the same level as the analysis folder (outside it).
